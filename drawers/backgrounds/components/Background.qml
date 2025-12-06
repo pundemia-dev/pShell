@@ -3,6 +3,7 @@ import QtQuick
 import qs.utils
 import QtQuick.Shapes
 import Quickshell
+import qs.widgets
 
 Shape {
     id: root
@@ -12,6 +13,9 @@ Shape {
     // Content size
     readonly property int wrapperWidth: wrapper?.wrapperWidth ?? 0
     readonly property int wrapperHeight: wrapper?.wrapperHeight ?? 0
+    Component.onCompleted: {
+        console.warn("hell", wrapperWidth);
+    }
 
     // Anchors
     required property bool aLeft
@@ -36,7 +40,7 @@ Shape {
     // Access zone
     required property int zWidth
     required property int zHeight
-    
+
     // Exclusions
     required property int left_area
     required property int top_area
@@ -45,8 +49,14 @@ Shape {
 
     required property bool excludeBarArea
 
+    readonly property var content: wrapper?.content
+    readonly property int pLeft: wrapper?.pLeft ?? Config.backgrounds.paddings.left ?? 0
+    readonly property int pTop: wrapper?.pTop ?? Config.backgrounds.paddings.top ?? 0
+    readonly property int pRight: wrapper?.pRight ?? Config.backgrounds.paddings.right ?? 0
+    readonly property int pBottom: wrapper?.pBottom ?? Config.backgrounds.paddings.bottom ?? 0
+
     property int edgeRounding: 20
-    
+
     preferredRendererType: Shape.CurveRenderer
     opacity: Colours.transparency.enabled ? Colours.transparency.base : 1
 
@@ -56,19 +66,63 @@ Shape {
         const expectTop = position.includes("top");
         const expectBottom = position.includes("bottom");
 
-        return (root.aLeft === expectLeft) &&
-            (root.aRight === expectRight) &&
-            (root.aTop === expectTop) &&
-            (root.aBottom === expectBottom);
+        return (root.aLeft === expectLeft) && (root.aRight === expectRight) && (root.aTop === expectTop) && (root.aBottom === expectBottom);
+    }
+    Item {
+        x: {
+            if (root.aLeft)
+                return root.mLeft + (root.excludeBarArea ? root.left_area : 0);
+            if (root.aHorizontalCenter)
+                return (root.zWidth / 2) - (root.wrapperWidth / 2) + root.hCenterOffset;
+            if (root.aRight)
+                return root.zWidth - root.wrapperWidth - root.mRight - (root.excludeBarArea ? root.right_area : 0);
+            return 0;
+        }
+        y: {
+            var y;
+            if (root.aTop) {
+                y = root.mTop + (root.excludeBarArea ? root.top_area : 0);
+            } else if (root.aVerticalCenter) {
+                y = (root.zHeight / 2) - (root.wrapperHeight / 2) + root.vCenterOffset;
+            } else if (root.aBottom) {
+                y = root.zHeight - root.wrapperHeight - root.mBottom - (root.excludeBarArea ? root.bottom_area : 0);
+            } else {
+                y = root.border_area;
+            }
+            return y;// + root.rounding * ((root.invertBaseRounding && (checkAnchors("left") || checkAnchors("left&bottom"))) ? -1 : 1);
+        }
+        implicitWidth: root.wrapperWidth
+        implicitHeight: root.wrapperHeight
+        // color: "green"
+        // opacity:0.5
+        Item {
+            anchors.fill: parent
+            anchors.leftMargin: root.pLeft
+            anchors.topMargin: root.pTop
+            anchors.rightMargin: root.pRight
+            anchors.bottomMargin: root.pBottom
+
+            Loader {
+                    anchors.fill: parent
+                    sourceComponent: root.content  // Загружаем Component
+
+                    Component.onCompleted: {
+                        console.log("Content loaded:", item)
+                    }
+                }
+        }
     }
 
     ShapePath {
         strokeWidth: -1
         fillColor: wrapperWidth > 0 && wrapperHeight > 0 ? Colours.palette.m3surface : "transparent"
         startX: {
-            if (root.aLeft) return root.mLeft + (root.excludeBarArea ? root.left_area : 0);
-            if (root.aHorizontalCenter) return (root.zWidth / 2) - (root.wrapperWidth / 2) + root.hCenterOffset;
-            if (root.aRight) return root.zWidth - root.wrapperWidth - root.mRight - (root.excludeBarArea ? root.right_area : 0);
+            if (root.aLeft)
+                return root.mLeft + (root.excludeBarArea ? root.left_area : 0);
+            if (root.aHorizontalCenter)
+                return (root.zWidth / 2) - (root.wrapperWidth / 2) + root.hCenterOffset;
+            if (root.aRight)
+                return root.zWidth - root.wrapperWidth - root.mRight - (root.excludeBarArea ? root.right_area : 0);
             return 0;
         }
 
@@ -88,7 +142,7 @@ Shape {
 
         // Left top corner
         PathArc {
-            relativeX: !root.invertBaseRounding ? root.rounding : (((checkAnchors("top")||checkAnchors("top&right")) ? -1 : 1) * root.rounding)
+            relativeX: !root.invertBaseRounding ? root.rounding : (((checkAnchors("top") || checkAnchors("top&right")) ? -1 : 1) * root.rounding)
             relativeY: !root.invertBaseRounding ? -root.rounding : (((checkAnchors("left") || checkAnchors("left&bottom")) ? -1 : 1) * -root.rounding)
             radiusX: Math.min(root.rounding, root.wrapperWidth)
             radiusY: -Math.min(root.rounding, root.wrapperHeight)

@@ -7,12 +7,12 @@ import qs.config
 JsonObject {
     property bool enabled: true
     property bool autoHide: false
-    property bool orientation: true// orientation ([false] - vertical / [true] - horizontal)
-    property bool position: false//  position ([false] - top or [true] - bottom / [false] - left or [true] - right)
+    property bool orientation: false// orientation ([false] - vertical / [true] - horizontal)
+    property bool position: true//  position ([false] - top or [true] - bottom / [false] - left or [true] - right)
     // property int thickness: 50
     property SeparatedData thickness: SeparatedData {
         all: 50
-        center: 70
+        // center: 54
     }
     property bool separated: true
     property SeparatedData rounding: SeparatedData {
@@ -22,21 +22,21 @@ JsonObject {
     }
     property SeparatedData invertBaseRounding: SeparatedData {
         all: false
-        center: false
+        center: true
     }
     property SeparatedData reusability: SeparatedData {
         all: false
     }
 
     property SeparatedData longSideMargin: SeparatedData {
-        all: 20
-        center: 50
+        all: 4
+        center: 0
     }
 
     property SeparatedData shortSideMargin: SeparatedData {
         all: 4
-        begin: 100
-        end: 100
+        // begin: 100
+        // end: 100
     }
 
     // property int longSideMargin: 4
