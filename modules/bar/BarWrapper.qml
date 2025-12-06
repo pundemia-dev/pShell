@@ -4,6 +4,7 @@ import qs.config
 import Quickshell
 import QtQuick
 import qs.widgets
+import "content"
 
 Item {
     id: root
@@ -61,8 +62,8 @@ Item {
     }
     property QtObject begin: QtObject {
         // Content size
-        property int wrapperWidth: Config.bar.orientation ? 300 : (isTotalThickness() ? (Config.bar.thickness.all + Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0)) : (Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0))
-        property int wrapperHeight: Config.bar.orientation ? (isTotalThickness() ? (Config.bar.thickness.all + Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0)) : (Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0)) : 300
+        property int wrapperWidth: Config.bar.orientation ? undefined : (isTotalThickness() ? (Config.bar.thickness.all + Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0)) : (Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0))
+        property int wrapperHeight: Config.bar.orientation ? (isTotalThickness() ? (Config.bar.thickness.all + Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0)) : (Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0)) : undefined
         // Anchors
         property bool aLeft: !(!Config.bar.orientation && Config.bar.position)
         property bool aRight: !Config.bar.orientation && Config.bar.position
@@ -88,12 +89,13 @@ Item {
         // Reusability
         property bool reusable: Config.bar.reusability.begin ?? Config.bar.reusability.all// ?? undefined
 
-        property Component content: Component {
-            StyledRect {
-                color: "red"
-                opacity: 0.5
-            }
-        }
+        property Component content: Begin {}
+        // Component {
+        //     StyledRect {
+        //         color: "red"
+        //         opacity: 0.5
+        //     }
+        // }
     }
     property QtObject center: QtObject {
         // Content size
@@ -112,7 +114,7 @@ Item {
         property int mTop: Config.bar.orientation && !Config.bar.position ? (Config.bar.orientation ? (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0) : (Config.bar.shortSideMargin.center ?? Config.bar.shortSideMargin.all ?? 0)) : 0
         property int mBottom: Config.bar.orientation && Config.bar.position ? (Config.bar.longSideMargin ? (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0) : (Config.bar.shortSideMargin.center ?? Config.bar.shortSideMargin ?? 0)) : 0
         // Paddings
-        property int pLeft: !Config.bar.orientation && !Config.bar.position && isTotalThickness() ? Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0)  : 0
+        property int pLeft: !Config.bar.orientation && !Config.bar.position && isTotalThickness() ? Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0) : 0
         property int pRight: !Config.bar.orientation && Config.bar.position && isTotalThickness() ? Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0) : 0
         property int pTop: Config.bar.orientation && !Config.bar.position && isTotalThickness() ? Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0) : 0
         property int pBottom: Config.bar.orientation && Config.bar.position && isTotalThickness() ? Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0) : 0

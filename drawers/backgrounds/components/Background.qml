@@ -11,8 +11,32 @@ Shape {
     required property var wrapper
 
     // Content size
-    readonly property int wrapperWidth: wrapper?.wrapperWidth ?? 0
-    readonly property int wrapperHeight: wrapper?.wrapperHeight ?? 0
+    // readonly property int wrapperWidth: wrapper?.wrapperWidth ?? wrapper. ?? 0
+    // readonly property int wrapperHeight: wrapper?.wrapperHeight ?? ?? 0
+    property Item contentLoader: null
+    readonly property int wrapperWidth: {
+        // Если явно задана ширина - используем её
+        if (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
+            return wrapper.wrapperWidth;
+        }
+        // Иначе берём размер контента + padding
+        if (contentLoader && contentLoader.item) {
+            return contentLoader.item.implicitWidth + pLeft + pRight;
+        }
+        return 0;
+    }
+
+    readonly property int wrapperHeight: {
+        // Если явно задана высота - используем её
+        if (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
+            return wrapper.wrapperHeight;
+        }
+        // Иначе берём размер контента + padding
+        if (contentLoader && contentLoader.item) {
+            return contentLoader.item.implicitHeight + pTop + pBottom;
+        }
+        return 0;
+    }
     Component.onCompleted: {
         console.warn("hell", wrapperWidth);
     }
@@ -69,6 +93,7 @@ Shape {
         return (root.aLeft === expectLeft) && (root.aRight === expectRight) && (root.aTop === expectTop) && (root.aBottom === expectBottom);
     }
     Item {
+        id: contentContainer
         x: {
             if (root.aLeft)
                 return root.mLeft + (root.excludeBarArea ? root.left_area : 0);
@@ -91,11 +116,14 @@ Shape {
             }
             return y;// + root.rounding * ((root.invertBaseRounding && (checkAnchors("left") || checkAnchors("left&bottom"))) ? -1 : 1);
         }
-        implicitWidth: root.wrapperWidth
-        implicitHeight: root.wrapperHeight
+        // implicitWidth: root.wrapperWidth
+        // implicitHeight: root.wrapperHeight
+        width: (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth > 0) ? root.wrapperWidth : root.contentLoader?.item?.implicitWidth + root.pLeft + root.pRight || 0
+        height: (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight > 0) ? root.wrapperHeight : root.contentLoader?.item?.implicitHeight + root.pTop + root.pBottom || 0
         // color: "green"
         // opacity:0.5
         Item {
+            id: paddingContaainer
             anchors.fill: parent
             anchors.leftMargin: root.pLeft
             anchors.topMargin: root.pTop
@@ -103,13 +131,15 @@ Shape {
             anchors.bottomMargin: root.pBottom
 
             Loader {
-                    anchors.fill: parent
-                    sourceComponent: root.content  // Загружаем Component
+                id: loader
+                anchors.fill: parent
+                sourceComponent: root.content  // Загружаем Component
 
-                    Component.onCompleted: {
-                        console.log("Content loaded:", item)
-                    }
+                Component.onCompleted: {
+                    root.contentLoader = loader;
+                    console.log("Content loaded:", item);
                 }
+            }
         }
     }
 
