@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import qs.config
 import QtQuick
 import qs.utils
@@ -21,7 +23,7 @@ Shape {
         }
         // Иначе берём размер контента + padding
         if (contentLoader && contentLoader.item) {
-            return contentLoader.item.implicitWidth + pLeft + pRight;
+            return (contentLoader.item.childrenRect.width || contentLoader.item.implicitWidth) + pLeft + pRight;
         }
         return 0;
     }
@@ -33,7 +35,7 @@ Shape {
         }
         // Иначе берём размер контента + padding
         if (contentLoader && contentLoader.item) {
-            return contentLoader.item.implicitHeight + pTop + pBottom;
+            return (contentLoader.item.childrenRect.height || contentLoader.item.implicitHeight) + pTop + pBottom;
         }
         return 0;
     }
@@ -118,12 +120,12 @@ Shape {
         }
         // implicitWidth: root.wrapperWidth
         // implicitHeight: root.wrapperHeight
-        width: (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth > 0) ? root.wrapperWidth : root.contentLoader?.item?.implicitWidth + root.pLeft + root.pRight || 0
-        height: (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight > 0) ? root.wrapperHeight : root.contentLoader?.item?.implicitHeight + root.pTop + root.pBottom || 0
+        width: root.wrapperWidth
+        height: root.wrapperHeight
         // color: "green"
         // opacity:0.5
         Item {
-            id: paddingContaainer
+            id: paddingContainer
             anchors.fill: parent
             anchors.leftMargin: root.pLeft
             anchors.topMargin: root.pTop
@@ -132,12 +134,15 @@ Shape {
 
             Loader {
                 id: loader
-                anchors.fill: parent
+                // anchors.fill: parent
+                x: (parent.width - (item ? (item.childrenRect.width || item.implicitWidth) : 0)) / 2
+                y: (parent.height - (item ? (item.childrenRect.height || item.implicitHeight) : 0)) / 2
+
                 sourceComponent: root.content  // Загружаем Component
 
                 Component.onCompleted: {
                     root.contentLoader = loader;
-                    console.log("Content loaded:", item);
+                    console.log("Content loaded:", item, loader.implicitHeight, loader.implicitWidth);
                 }
             }
         }

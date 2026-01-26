@@ -11,10 +11,15 @@ JsonObject {
     property bool position: false//  position ([false] - top or [true] - bottom / [false] - left or [true] - right)
     // property int thickness: 50
     property SeparatedData thickness: SeparatedData {
-        all: 50
-        center: 70
+        all: 40
+        // center: 100
     }
     property bool separated: true
+    property SeparatedData paddings: SeparatedData {
+        all: 15
+        center: 25
+        begin: 20
+    }
     property SeparatedData rounding: SeparatedData {
         all: 15
         center: 25
@@ -29,12 +34,12 @@ JsonObject {
     }
 
     property SeparatedData longSideMargin: SeparatedData {
-        all: 20
+        all: 7
         center: 0
     }
 
     property SeparatedData shortSideMargin: SeparatedData {
-        all: 4
+        all: 7
         // begin: 100
         // end: 100
     }

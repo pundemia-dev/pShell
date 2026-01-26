@@ -38,7 +38,7 @@ Singleton {
     component FontFamily: QtObject {
         readonly property string sans: "Dank Mono"//"ZedMono Nerd Font"//"IBM Plex Sans"
         readonly property string mono: "Dank Mono"//"ZedMono Nerd Font"//"JetBrains Mono NF"
-        readonly property string material: "tabler-icons"//"Material Symbols Rounded"
+        readonly property string tabler: "tabler-icons"//"Material Symbols Rounded"
     }
 
     component FontSize: QtObject {
@@ -56,7 +56,7 @@ Singleton {
     }
 
     component AnimCurves: QtObject {
-        readonly property list<real> bubble: [1.00,-0.03,0.01,1.27]
+        readonly property list<real> bubble: [1.00, -0.03, 0.01, 1.27]
         readonly property list<real> emphasized: [0.05, 0, 2 / 15, 0.06, 1 / 6, 0.4, 5 / 24, 0.82, 0.25, 1, 1, 1]
         readonly property list<real> emphasizedAccel: [0.3, 0, 0.8, 0.15, 1, 1]
         readonly property list<real> emphasizedDecel: [0.05, 0.7, 0.1, 1, 1, 1]
