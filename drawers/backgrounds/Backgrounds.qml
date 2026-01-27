@@ -221,7 +221,7 @@ Item {
     Repeater {
         model: root.manager.isolatedBackgrounds
 
-        onCountChanged: console.log("Repeater count changed to:", count)
+        // onCountChanged: console.log("Repeater count changed to:", count)
         delegate: Loader {
             required property int index
 

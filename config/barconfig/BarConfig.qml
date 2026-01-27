@@ -7,11 +7,11 @@ import qs.config
 JsonObject {
     property bool enabled: true
     property bool autoHide: false
-    property bool orientation: false// orientation ([false] - vertical / [true] - horizontal)
-    property bool position: false//  position ([false] - top or [true] - bottom / [false] - left or [true] - right)
+    property bool orientation: true// orientation ([false] - vertical / [true] - horizontal)
+    property bool position: true//  position ([false] - top or [true] - bottom / [false] - left or [true] - right)
     // property int thickness: 50
     property SeparatedData thickness: SeparatedData {
-        all: 40
+        all: 44
         // center: 100
     }
     property bool separated: true
@@ -21,9 +21,9 @@ JsonObject {
         begin: 20
     }
     property SeparatedData rounding: SeparatedData {
-        all: 15
-        center: 25
-        begin: 15
+        all: 12
+        center: 30
+        // begin: 15
     }
     property SeparatedData invertBaseRounding: SeparatedData {
         all: false

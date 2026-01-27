@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 
-import qs.widgets
+import qs.components
 import qs.utils
 import qs.config
 import QtQuick
@@ -13,7 +13,7 @@ Item {
 
     StyledRect {
         anchors.fill: parent
-        color: Config.corners.color || Colours.alpha(Colours.palette.m3surface, false)
+        color: Config.corners.color || Colours.alpha(Colours.palette.surface, false)
 
         layer.enabled: true
         layer.effect: MultiEffect {

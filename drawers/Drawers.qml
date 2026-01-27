@@ -15,7 +15,9 @@ import "panels"
 import qs.modules.bar
 
 import qs.config
-import qs.widgets
+import qs.components
+import qs.components.containers
+import qs.services
 import qs.utils
 
 Variants {
@@ -98,7 +100,7 @@ Variants {
             StyledRect {
                 anchors.fill: parent
                 opacity: visibilities.session ? 0.5 : 0
-                color: Colours.palette.m3scrim
+                color: Colours.palette.scrim
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -116,7 +118,7 @@ Variants {
                 layer.effect: MultiEffect {
                     shadowEnabled: true
                     blurMax: 15
-                    shadowColor: Qt.alpha(Colours.palette.m3shadow, 0.7)
+                    shadowColor: Qt.alpha(Colours.palette.shadow, 0.7)
                 }
 
                 Border {

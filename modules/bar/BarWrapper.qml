@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import qs.config
 import Quickshell
 import QtQuick
-import qs.widgets
+import qs.components
 import "content"
 
 Item {
@@ -82,20 +82,14 @@ Item {
         property int pTop: Config.bar.orientation && !Config.bar.position && isTotalThickness() ? Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0) : (!Config.bar.orientation ? (Config.bar.paddings.begin ?? Config.bar.paddings.all ?? 0) : 0)
         property int pBottom: Config.bar.orientation && Config.bar.position && isTotalThickness() ? Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0) : (!Config.bar.orientation ? (Config.bar.paddings.begin ?? Config.bar.paddings.all ?? 0) : 0)
         // Base settings
-        property int rounding: Config.bar.rounding.begin ?? Config.bar.rounding.all ?? 20//undefined
+        property int rounding: Config.bar.rounding.begin ?? Config.bar.rounding.all ?? undefined
         property bool invertBaseRounding: Config.bar.invertBaseRounding.begin ?? (Config.bar.invertBaseRounding.all ?? undefined)
         // Bar exclusion
         property bool excludeBarArea: false
         // Reusability
-        property bool reusable: Config.bar.reusability.begin ?? Config.bar.reusability.all// ?? undefined
+        property bool reusable: Config.bar.reusability.begin ?? Config.bar.reusability.all ?? undefined
 
         property Component content: Begin {}
-        // Component {
-        //     StyledRect {
-        //         color: "red"
-        //         opacity: 0.5
-        //     }
-        // }
     }
     property QtObject center: QtObject {
         // Content size

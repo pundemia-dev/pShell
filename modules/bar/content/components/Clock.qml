@@ -1,5 +1,5 @@
-import qs.widgets
-import qs.utils
+import qs.components
+import qs.services
 import qs.config
 import QtQuick
 import QtQuick.Layouts
@@ -10,7 +10,7 @@ FlexboxLayout {
     alignItems: FlexboxLayout.AlignCenter
     justifyContent: FlexboxLayout.JustifyCenter
 
-    property color colour: Colours.palette.m3tertiary
+    property color colour: Colours.palette.tertiary
 
     gap: Appearance.spacing.small
 

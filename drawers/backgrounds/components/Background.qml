@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import qs.config
 import QtQuick
-import qs.utils
+import qs.services
 import QtQuick.Shapes
 import Quickshell
 import qs.widgets
@@ -39,9 +39,9 @@ Shape {
         }
         return 0;
     }
-    Component.onCompleted: {
-        console.warn("hell", wrapperWidth);
-    }
+    // Component.onCompleted: {
+    //     console.warn("hell", wrapperWidth);
+    // }
 
     // Anchors
     required property bool aLeft
@@ -142,7 +142,7 @@ Shape {
 
                 Component.onCompleted: {
                     root.contentLoader = loader;
-                    console.log("Content loaded:", item, loader.implicitHeight, loader.implicitWidth);
+                    // console.log("Content loaded:", item, loader.implicitHeight, loader.implicitWidth);
                 }
             }
         }
@@ -150,7 +150,7 @@ Shape {
 
     ShapePath {
         strokeWidth: -1
-        fillColor: wrapperWidth > 0 && wrapperHeight > 0 ? Colours.palette.m3surface : "transparent"
+        fillColor: wrapperWidth > 0 && wrapperHeight > 0 ? Colours.palette.surface : "transparent"
         startX: {
             if (root.aLeft)
                 return root.mLeft + (root.excludeBarArea ? root.left_area : 0);

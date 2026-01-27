@@ -1,4 +1,4 @@
-import qs.utils
+import qs.services
 import qs.config
 
 StyledText {
