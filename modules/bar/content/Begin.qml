@@ -29,6 +29,11 @@ FlexboxLayout {
         id: bluetooth
     }
 
+    KeyboardPreview {
+        id: keyboardPreview
+    }
+
+
     // Rectangle {
     //     id: resizableRect
     //     width: 20

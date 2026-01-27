@@ -1,0 +1,39 @@
+import qs.components
+import qs.services
+import qs.config
+import QtQuick
+import Quickshell
+import QtQuick.Layouts
+
+FlexboxLayout {
+    id: root
+    direction: Config.bar.orientation ? FlexboxLayout.Row : FlexboxLayout.Column
+    alignItems: FlexboxLayout.AlignCenter
+    justifyContent: FlexboxLayout.JustifyCenter
+    visible: Config.bar.kbLayout.show
+    property color colour: Colours.palette.secondary
+
+    gap: Appearance.spacing.small
+
+    StyledIcon {
+        id: icon
+        visible: Config.bar.kbLayout.showIcon
+        text: "\uebd6"//"calendar_month"
+        color: root.colour
+
+        // anchors.horizontalCenter: parent.horizontalCenter
+    }
+
+    StyledText {
+        id: text
+        visible: Config.bar.kbLayout.showLayout
+        // anchors.horizontalCenter: parent.horizontalCenter
+
+        // horizontalAlignment: StyledText.AlignHCenter
+        text: Hypr.capsLock ? Hypr.kbLayout.toUpperCase() : Hypr.kbLayout.toLowerCase()//"en"//Time.format("hh\nmm")
+        font.pointSize: Appearance.font.size.smaller
+        font.family: Appearance.font.family.mono
+        color: root.colour
+        animate: true
+    }
+}
