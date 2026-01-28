@@ -16,16 +16,17 @@ Shape {
     // readonly property int wrapperWidth: wrapper?.wrapperWidth ?? wrapper. ?? 0
     // readonly property int wrapperHeight: wrapper?.wrapperHeight ?? ?? 0
     property Item contentLoader: null
+
+    property int cachedContentWidth: 0
+    property int cachedContentHeight: 0
+
     readonly property int wrapperWidth: {
         // Если явно задана ширина - используем её
         if (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
             return wrapper.wrapperWidth;
         }
-        // Иначе берём размер контента + padding
-        if (contentLoader && contentLoader.item) {
-            return (contentLoader.item.childrenRect.width || contentLoader.item.implicitWidth) + pLeft + pRight;
-        }
-        return 0;
+        // Иначе берём кэшированный размер контента + padding
+        return cachedContentWidth + pLeft + pRight;
     }
 
     readonly property int wrapperHeight: {
@@ -33,11 +34,8 @@ Shape {
         if (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
             return wrapper.wrapperHeight;
         }
-        // Иначе берём размер контента + padding
-        if (contentLoader && contentLoader.item) {
-            return (contentLoader.item.childrenRect.height || contentLoader.item.implicitHeight) + pTop + pBottom;
-        }
-        return 0;
+        // Иначе берём кэшированный размер контента + padding
+        return cachedContentHeight + pTop + pBottom;
     }
     // Component.onCompleted: {
     //     console.warn("hell", wrapperWidth);
@@ -134,15 +132,32 @@ Shape {
 
             Loader {
                 id: loader
-                // anchors.fill: parent
-                x: (parent.width - (item ? (item.childrenRect.width || item.implicitWidth) : 0)) / 2
-                y: (parent.height - (item ? (item.childrenRect.height || item.implicitHeight) : 0)) / 2
 
                 sourceComponent: root.content  // Загружаем Component
 
+                function updatePosition() {
+                    if (item) {
+                        var w = item.childrenRect.width || item.implicitWidth || 0;
+                        var h = item.childrenRect.height || item.implicitHeight || 0;
+                        root.cachedContentWidth = w;
+                        root.cachedContentHeight = h;
+                        x = (parent.width - w) / 2;
+                        y = (parent.height - h) / 2;
+                    }
+                }
+
+                Connections {
+                    target: loader.item
+                    function onChildrenRectChanged() { Qt.callLater(loader.updatePosition) }
+                    function onImplicitWidthChanged() { Qt.callLater(loader.updatePosition) }
+                    function onImplicitHeightChanged() { Qt.callLater(loader.updatePosition) }
+                }
+
+                onItemChanged: Qt.callLater(updatePosition)
+
                 Component.onCompleted: {
                     root.contentLoader = loader;
-                    // console.log("Content loaded:", item, loader.implicitHeight, loader.implicitWidth);
+                    Qt.callLater(updatePosition);
                 }
             }
         }
@@ -181,7 +196,7 @@ Shape {
             relativeY: !root.invertBaseRounding ? -root.rounding : (((checkAnchors("left") || checkAnchors("left&bottom")) ? -1 : 1) * -root.rounding)
             radiusX: Math.min(root.rounding, root.wrapperWidth)
             radiusY: -Math.min(root.rounding, root.wrapperHeight)
-            direction: root.invertBaseRounding ? (((root.aTop === true) != (root.aLeft === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : undefined
+            direction: root.invertBaseRounding ? (((root.aTop === true) != (root.aLeft === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Top edge
         PathLine {
@@ -194,7 +209,7 @@ Shape {
             relativeY: !root.invertBaseRounding ? root.rounding : (((checkAnchors("right") || checkAnchors("right&bottom")) ? -1 : 1) * root.rounding)
             radiusX: Math.min(root.rounding, root.wrapperWidth)
             radiusY: Math.min(root.rounding, root.wrapperHeight)
-            direction: root.invertBaseRounding ? (((root.aTop === true) != (root.aRight === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : undefined
+            direction: root.invertBaseRounding ? (((root.aTop === true) != (root.aRight === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Right edge
         PathLine {
@@ -207,7 +222,7 @@ Shape {
             relativeY: !root.invertBaseRounding ? root.rounding : (((checkAnchors("right") || checkAnchors("right&top")) ? -1 : 1) * root.rounding)
             radiusX: Math.min(root.rounding, root.wrapperWidth)
             radiusY: Math.min(root.rounding, root.wrapperHeight)
-            direction: root.invertBaseRounding ? (((root.aBottom === true) != (root.aRight === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : undefined
+            direction: root.invertBaseRounding ? (((root.aBottom === true) != (root.aRight === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Bottom edge
         PathLine {
@@ -220,7 +235,7 @@ Shape {
             relativeY: !root.invertBaseRounding ? -root.rounding : (((checkAnchors("left") || checkAnchors("left&top")) ? -1 : 1) * -root.rounding)
             radiusX: Math.min(root.rounding, root.wrapperWidth)
             radiusY: Math.min(root.rounding, root.wrapperHeight)
-            direction: root.invertBaseRounding ? (((root.aBottom === true) != (aLeft === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : undefined
+            direction: root.invertBaseRounding ? (((root.aBottom === true) != (aLeft === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Left edge
         PathLine {

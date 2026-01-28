@@ -62,8 +62,8 @@ Item {
     }
     property QtObject begin: QtObject {
         // Content size
-        property int wrapperWidth: Config.bar.orientation ? undefined : (isTotalThickness() ? (Config.bar.thickness.all + Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0)) : (Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0))
-        property int wrapperHeight: Config.bar.orientation ? (isTotalThickness() ? (Config.bar.thickness.all + Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0)) : (Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0)) : undefined
+        property int wrapperWidth: Config.bar.orientation ? 0 : (isTotalThickness() ? (Config.bar.thickness.all + Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0)) : (Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0))
+        property int wrapperHeight: Config.bar.orientation ? (isTotalThickness() ? (Config.bar.thickness.all + Math.max(Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0, Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0) - (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0)) : (Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0)) : 0
         // Anchors
         property bool aLeft: !(!Config.bar.orientation && Config.bar.position)
         property bool aRight: !Config.bar.orientation && Config.bar.position
