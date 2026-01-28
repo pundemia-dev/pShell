@@ -33,6 +33,13 @@ FlexboxLayout {
         id: keyboardPreview
     }
 
+    OsIcon {
+        id: osIcon
+    }
+
+    // Tray {
+    //     id: tray
+    // }
 
     // Rectangle {
     //     id: resizableRect

@@ -309,4 +309,15 @@ Singleton {
             root.osName = nameLine.split("=")[1].replace(/"/g, "");
         }
     }
+    function getTrayIcon(id: string, icon: string): string {
+        for (const sub of Config.bar.tray.iconSubs)
+            if (sub.id === id)
+                return sub.image ? Qt.resolvedUrl(sub.image) : Quickshell.iconPath(sub.icon);
+
+        if (icon.includes("?path=")) {
+            const [name, path] = icon.split("?path=");
+            icon = Qt.resolvedUrl(`${path}/${name.slice(name.lastIndexOf("/") + 1)}`);
+        }
+        return icon;
+    }
 }

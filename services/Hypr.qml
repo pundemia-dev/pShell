@@ -46,7 +46,8 @@ Singleton {
     }
 
     function reloadDynamicConfs(): void {
-        extras.batchMessage(["keyword bindlni ,Caps_Lock,global,pShell:refreshDevices", "keyword bindlni ,Num_Lock,global,pShell:refreshDevices"]);
+        // extras.batchMessage(["keyword bindlni ,Caps_Lock,global,pShell:refreshDevices", "keyword bindlni ,Num_Lock,global,pShell:refreshDevices"]);
+        extras.batchMessage(["keyword bindlni SHIFT,code:66,global,pShell:refreshDevices", "keyword bindlni ,Num_Lock,global,pShell:refreshDevices"]);
     }
 
     Component.onCompleted: reloadDynamicConfs()

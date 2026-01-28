@@ -1,7 +1,7 @@
 import Quickshell.Io
 import qs.config
 
-// import "components
+import "components"
 //
 
 JsonObject {
@@ -43,4 +43,5 @@ JsonObject {
         // begin: 100
         // end: 100
     }
+    property KbPreviewConfig kbPreview: KbPreviewConfig {}
 }

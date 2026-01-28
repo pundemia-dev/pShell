@@ -10,14 +10,14 @@ FlexboxLayout {
     direction: Config.bar.orientation ? FlexboxLayout.Row : FlexboxLayout.Column
     alignItems: FlexboxLayout.AlignCenter
     justifyContent: FlexboxLayout.JustifyCenter
-    visible: Config.bar.kbLayout.show
+    // visible: Config.bar.kbLayout.show
     property color colour: Colours.palette.secondary
 
     gap: Appearance.spacing.small
 
     StyledIcon {
         id: icon
-        visible: Config.bar.kbLayout.showIcon
+        visible: Config.bar.kbPreview.showIcon
         text: "\uebd6"//"calendar_month"
         color: root.colour
 
@@ -26,7 +26,7 @@ FlexboxLayout {
 
     StyledText {
         id: text
-        visible: Config.bar.kbLayout.showLayout
+        visible: Config.bar.kbPreview.showLayout
         // anchors.horizontalCenter: parent.horizontalCenter
 
         // horizontalAlignment: StyledText.AlignHCenter
@@ -35,5 +35,7 @@ FlexboxLayout {
         font.family: Appearance.font.family.mono
         color: root.colour
         animate: true
+        transform: Translate { y: Hypr.capsLock ? -1 : -3 }
+        // anchors.verticalCenterOffset: -2
     }
 }

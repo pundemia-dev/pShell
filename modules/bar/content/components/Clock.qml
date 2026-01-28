@@ -33,10 +33,15 @@ FlexboxLayout {
     StyledText {
         id: text
 
-        horizontalAlignment: StyledText.AlignHCenter
+        // horizontalAlignment: StyledText.AlignHCenter
+        // verticalAlignment: StyledText.AlignVCenter
         text: Config.bar.orientation ? Time.format("hh:mm") : Time.format("hh\nmm")
         font.pointSize: Appearance.font.size.smaller
         font.family: Appearance.font.family.mono
         color: root.colour
+
+        // Layout.alignment: Qt.AlignVCenter
+        transform: Translate { y: -2 }
+        // anchors.verticalCenterOffset: -2
     }
 }
