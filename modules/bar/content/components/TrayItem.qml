@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import qs.components.effects
+import qs.components
 import qs.services
 import qs.config
 import qs.utils
@@ -15,6 +16,7 @@ MouseArea {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     implicitWidth: Appearance.font.size.small * 2
     implicitHeight: Appearance.font.size.small * 2
+    scale: 0
 
     onClicked: event => {
         if (event.button === Qt.LeftButton)
@@ -28,7 +30,29 @@ MouseArea {
 
         anchors.fill: parent
         source: Icons.getTrayIcon(root.modelData.id, root.modelData.icon)
-        colour: Colours.palette.m3secondary
+        colour: Colours.palette.secondary
         layer.enabled: Config.bar.tray.recolour
     }
+    Component.onCompleted: {
+        scale = 1;
+    }
+    Behavior on scale {
+        Anim {
+            easing.bezierCurve: Appearance.anim.curves.standardDecel
+        }
+    }
+    Behavior on x {
+        Anim {
+        }
+    }
+    Behavior on y {
+        Anim {
+        }
+    }
+    // Anim {
+    //     properties: "scale"
+    //     from: 0
+    //     to: 1
+    //     easing.bezierCurve: Appearance.anim.curves.standardDecel
+    // }
 }

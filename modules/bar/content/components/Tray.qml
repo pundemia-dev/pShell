@@ -10,7 +10,10 @@ import QtQuick
 FlexboxLayout {
     id: root
 
-    readonly property alias layout: layout
+    direction: Config.bar.orientation ? FlexboxLayout.Row : FlexboxLayout.Column
+    alignItems: FlexboxLayout.AlignCenter
+    justifyContent: FlexboxLayout.JustifyCenter
+    // readonly property alias layout: layout
     readonly property alias items: items
     readonly property alias expandIcon: expandIcon
 
@@ -19,11 +22,11 @@ FlexboxLayout {
 
     property bool expanded
 
-    readonly property real nonAnimHeight: {
-        if (!Config.bar.tray.compact)
-            return layout.implicitHeight + padding * 2;
-        return (expanded ? expandIcon.implicitHeight + layout.implicitHeight + spacing : expandIcon.implicitHeight) + padding * 2;
-    }
+    // readonly property real nonAnimHeight: {
+    //     if (!Config.bar.tray.compact)
+    //         return layout.implicitHeight + padding * 2;
+    //     return (expanded ? expandIcon.implicitHeight + layout.implicitHeight + spacing : expandIcon.implicitHeight) + padding * 2;
+    // }
 
     // clip: true
     // visible: height > 0
@@ -34,35 +37,35 @@ FlexboxLayout {
     // color: Qt.alpha(Colours.tPalette.m3surfaceContainer, (Config.bar.tray.background && items.count > 0) ? Colours.tPalette.m3surfaceContainer.a : 0)
     // radius: Appearance.rounding.full
 
-    Column {
-        id: layout
+    // Column {
+        // id: layout
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: root.padding
-        spacing: Appearance.spacing.small
+        // anchors.horizontalCenter: parent.horizontalCenter
+        // anchors.top: parent.top
+        // anchors.topMargin: root.padding
+        // spacing: Appearance.spacing.small
 
-        opacity: root.expanded || !Config.bar.tray.compact ? 1 : 0
+        // opacity: root.expanded || !Config.bar.tray.compact ? 1 : 0
 
-        add: Transition {
-            Anim {
-                properties: "scale"
-                from: 0
-                to: 1
-                easing.bezierCurve: Appearance.anim.curves.standardDecel
-            }
-        }
+        // add: Transition {
+        //     Anim {
+        //         properties: "scale"
+        //         from: 0
+        //         to: 1
+        //         easing.bezierCurve: Appearance.anim.curves.standardDecel
+        //     }
+        // }
 
-        move: Transition {
-            Anim {
-                properties: "scale"
-                to: 1
-                easing.bezierCurve: Appearance.anim.curves.standardDecel
-            }
-            Anim {
-                properties: "x,y"
-            }
-        }
+        // move: Transition {
+        //     Anim {
+        //         properties: "scale"
+        //         to: 1
+        //         easing.bezierCurve: Appearance.anim.curves.standardDecel
+        //     }
+        //     Anim {
+        //         properties: "x,y"
+        //     }
+        // }
 
         Repeater {
             id: items
@@ -75,13 +78,13 @@ FlexboxLayout {
         Behavior on opacity {
             Anim {}
         }
-    }
+    // }
 
     Loader {
         id: expandIcon
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
+        // anchors.horizontalCenter: parent.horizontalCenter
+        // anchors.bottom: parent.bottom
 
         active: Config.bar.tray.compact
 
@@ -92,9 +95,9 @@ FlexboxLayout {
             StyledIcon {
                 id: expandIconInner
 
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: Config.bar.tray.background ? Appearance.padding.small : -Appearance.padding.small
+                // anchors.horizontalCenter: parent.horizontalCenter
+                // anchors.bottom: parent.bottom
+                // anchors.bottomMargin: Config.bar.tray.background ? Appearance.padding.small : -Appearance.padding.small
                 text: "expand_less"
                 font.pointSize: Appearance.font.size.large
                 rotation: root.expanded ? 180 : 0

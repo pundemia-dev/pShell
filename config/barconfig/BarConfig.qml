@@ -7,7 +7,7 @@ import "components"
 JsonObject {
     property bool enabled: true
     property bool autoHide: false
-    property bool orientation: true// orientation ([false] - vertical / [true] - horizontal)
+    property bool orientation: false// orientation ([false] - vertical / [true] - horizontal)
     property bool position: true//  position ([false] - top or [true] - bottom / [false] - left or [true] - right)
     // property int thickness: 50
     property SeparatedData thickness: SeparatedData {
@@ -44,4 +44,5 @@ JsonObject {
         // end: 100
     }
     property KbPreviewConfig kbPreview: KbPreviewConfig {}
+    property TrayConfig tray: TrayConfig {}
 }

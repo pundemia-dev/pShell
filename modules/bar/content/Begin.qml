@@ -37,9 +37,9 @@ FlexboxLayout {
         id: osIcon
     }
 
-    // Tray {
-    //     id: tray
-    // }
+    Tray {
+        id: tray
+    }
 
     Rectangle {
         id: resizableRect
