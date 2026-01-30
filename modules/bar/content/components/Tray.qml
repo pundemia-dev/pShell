@@ -7,84 +7,49 @@ import Quickshell.Services.SystemTray
 import QtQuick.Layouts
 import QtQuick
 
-FlexboxLayout {
+Item {
     id: root
 
-    direction: Config.bar.orientation ? FlexboxLayout.Row : FlexboxLayout.Column
-    alignItems: FlexboxLayout.AlignCenter
-    justifyContent: FlexboxLayout.JustifyCenter
-    // readonly property alias layout: layout
     readonly property alias items: items
     readonly property alias expandIcon: expandIcon
 
     readonly property int padding: Config.bar.tray.background ? Appearance.padding.normal : Appearance.padding.small
-    readonly property int spacing: Config.bar.tray.background ? Appearance.spacing.small : 0
+    readonly property int itemSpacing: Config.bar.tray.background ? Appearance.spacing.small : 0
+    readonly property int itemSize: Appearance.font.size.small * 2
+    readonly property bool isHorizontal: Config.bar.orientation
 
     property bool expanded
 
-    // readonly property real nonAnimHeight: {
-    //     if (!Config.bar.tray.compact)
-    //         return layout.implicitHeight + padding * 2;
-    //     return (expanded ? expandIcon.implicitHeight + layout.implicitHeight + spacing : expandIcon.implicitHeight) + padding * 2;
-    // }
+    width: implicitWidth
+    height: implicitHeight
+    implicitWidth: isHorizontal ? (items.count * itemSize + Math.max(0, items.count - 1) * itemSpacing) : itemSize
+    implicitHeight: isHorizontal ? itemSize : (items.count * itemSize + Math.max(0, items.count - 1) * itemSpacing)
 
-    // clip: true
-    // visible: height > 0
+    Repeater {
+        id: items
 
-    // implicitWidth: Config.bar.sizes.innerWidth
-    // implicitHeight: nonAnimHeight
+        model: SystemTray.items
 
-    // color: Qt.alpha(Colours.tPalette.m3surfaceContainer, (Config.bar.tray.background && items.count > 0) ? Colours.tPalette.m3surfaceContainer.a : 0)
-    // radius: Appearance.rounding.full
+        TrayItem {
+            id: trayItem
 
-    // Column {
-        // id: layout
+            required property int index
 
-        // anchors.horizontalCenter: parent.horizontalCenter
-        // anchors.top: parent.top
-        // anchors.topMargin: root.padding
-        // spacing: Appearance.spacing.small
+            x: root.isHorizontal ? trayItem.index * (root.itemSize + root.itemSpacing) : 0
+            y: root.isHorizontal ? 0 : trayItem.index * (root.itemSize + root.itemSpacing)
 
-        // opacity: root.expanded || !Config.bar.tray.compact ? 1 : 0
+            Behavior on x {
+                Anim {}
+            }
 
-        // add: Transition {
-        //     Anim {
-        //         properties: "scale"
-        //         from: 0
-        //         to: 1
-        //         easing.bezierCurve: Appearance.anim.curves.standardDecel
-        //     }
-        // }
-
-        // move: Transition {
-        //     Anim {
-        //         properties: "scale"
-        //         to: 1
-        //         easing.bezierCurve: Appearance.anim.curves.standardDecel
-        //     }
-        //     Anim {
-        //         properties: "x,y"
-        //     }
-        // }
-
-        Repeater {
-            id: items
-
-            model: SystemTray.items
-
-            TrayItem {}
+            Behavior on y {
+                Anim {}
+            }
         }
-
-        Behavior on opacity {
-            Anim {}
-        }
-    // }
+    }
 
     Loader {
         id: expandIcon
-
-        // anchors.horizontalCenter: parent.horizontalCenter
-        // anchors.bottom: parent.bottom
 
         active: Config.bar.tray.compact
 
@@ -95,9 +60,6 @@ FlexboxLayout {
             StyledIcon {
                 id: expandIconInner
 
-                // anchors.horizontalCenter: parent.horizontalCenter
-                // anchors.bottom: parent.bottom
-                // anchors.bottomMargin: Config.bar.tray.background ? Appearance.padding.small : -Appearance.padding.small
                 text: "expand_less"
                 font.pointSize: Appearance.font.size.large
                 rotation: root.expanded ? 180 : 0
@@ -110,6 +72,13 @@ FlexboxLayout {
                     Anim {}
                 }
             }
+        }
+    }
+
+    Behavior on implicitWidth {
+        Anim {
+            duration: Appearance.anim.durations.expressiveDefaultSpatial
+            easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
         }
     }
 

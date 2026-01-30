@@ -33,26 +33,14 @@ MouseArea {
         colour: Colours.palette.secondary
         layer.enabled: Config.bar.tray.recolour
     }
+
     Component.onCompleted: {
         scale = 1;
     }
+
     Behavior on scale {
         Anim {
             easing.bezierCurve: Appearance.anim.curves.standardDecel
         }
     }
-    Behavior on x {
-        Anim {
-        }
-    }
-    Behavior on y {
-        Anim {
-        }
-    }
-    // Anim {
-    //     properties: "scale"
-    //     from: 0
-    //     to: 1
-    //     easing.bezierCurve: Appearance.anim.curves.standardDecel
-    // }
 }
