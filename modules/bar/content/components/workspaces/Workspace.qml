@@ -1,4 +1,4 @@
-import qs.widgets
+import qs.components
 import qs.services
 import qs.utils
 import qs.config
@@ -6,55 +6,61 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 
-Item {
+ColumnLayout {
     id: root
 
     required property int index
+    required property int activeWsId
     required property var occupied
     required property int groupOffset
 
     readonly property bool isWorkspace: true // Flag for finding workspace children
     // Unanimated prop for others to use as reference
-    readonly property real size: childrenRect.height + (hasWindows ? Appearance.padding.smaller : 0)
+    readonly property int size: implicitHeight + (hasWindows ? Appearance.padding.small : 0)
 
     readonly property int ws: groupOffset + index + 1
     readonly property bool isOccupied: occupied[ws] ?? false
     readonly property bool hasWindows: isOccupied && Config.bar.workspaces.showWindows
 
-    Layout.preferredWidth: childrenRect.width
+    Layout.alignment: Qt.AlignHCenter
     Layout.preferredHeight: size
+
+    spacing: 0
 
     StyledText {
         id: indicator
 
-        readonly property string label: Config.bar.workspaces.unit.label || root.ws
-        readonly property string occupiedLabel: Config.bar.workspaces.occupied.label || label
-        readonly property string activeLabel: Config.bar.workspaces.active.label || (root.isOccupied ? occupiedLabel : label)
+        Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+        Layout.preferredHeight: Config.bar.sizes.innerWidth - Appearance.padding.small * 2
 
         animate: true
-        text: Config.bar.workspaces.numerals[index] || (Hyprland.activeWsId === root.ws ? activeLabel : root.isOccupied ? occupiedLabel : label)
-        font.family: Hyprland.activeWsId === root.ws ? Config.bar.workspaces.active.labelFont : root.isOccupied ? Config.bar.workspaces.occupied.labelFont : Config.bar.workspaces.unit.labelFont
-        font.pointSize: Hyprland.activeWsId === root.ws ? Config.bar.workspaces.active.fontSize : root.isOccupied ? Config.bar.workspaces.occupied.fontSize : Config.bar.workspaces.unit.fontSize 
-        // font.family: Appearance.font.family.mono //added
-        color: Hyprland.activeWsId === root.ws ? "white" : root.isOccupied ? (Config.bar.workspaces.occupied.labelColor || Colours.palette.on_surface) : (Config.bar.workspaces.unit.labelColor || Colours.palette.outline_variant) //: Config.bar.workspaces.active.labelColor//Colours.palette.on_surface : Colours.palette.outline_variant
-        horizontalAlignment: StyledText.AlignHCenter
-        verticalAlignment: StyledText.AlignVCenter
-
-        // width: Config.bar.workspaces.active.labelSize//Config.bar.sizes.innerHeight
-        // height: Config.bar.workspaces.active.labelSize//Config.bar.sizes.innerHeight
-        width: Config.bar.sizes.innerHeight
-        height: Config.bar.sizes.innerHeight
+        text: {
+            const ws = Hypr.workspaces.values.find(w => w.id === root.ws);
+            const wsName = !ws || ws.name == root.ws ? root.ws : ws.name[0];
+            let displayName = wsName.toString();
+            if (Config.bar.workspaces.capitalisation.toLowerCase() === "upper") {
+                displayName = displayName.toUpperCase();
+            } else if (Config.bar.workspaces.capitalisation.toLowerCase() === "lower") {
+                displayName = displayName.toLowerCase();
+            }
+            const label = Config.bar.workspaces.label || displayName;
+            const occupiedLabel = Config.bar.workspaces.occupiedLabel || label;
+            const activeLabel = Config.bar.workspaces.activeLabel || (root.isOccupied ? occupiedLabel : label);
+            return root.activeWsId === root.ws ? activeLabel : root.isOccupied ? occupiedLabel : label;
+        }
+        color: Config.bar.workspaces.occupiedBg || root.isOccupied || root.activeWsId === root.ws ? Colours.palette.on_surface : Colours.layer(Colours.palette.outline_variant, 2)
+        verticalAlignment: Qt.AlignVCenter
     }
 
     Loader {
         id: windows
 
-        active: Config.bar.workspaces.showWindows
-        asynchronous: true
+        Layout.alignment: Qt.AlignHCenter
+        Layout.fillHeight: true
+        Layout.topMargin: -Config.bar.sizes.innerWidth / 10
 
-        anchors.horizontalCenter: indicator.horizontalCenter
-        anchors.top: indicator.bottom
-        anchors.topMargin: -Config.bar.sizes.innerHeight / 10
+        visible: active
+        active: root.hasWindows
 
         sourceComponent: Column {
             spacing: 0
@@ -81,12 +87,12 @@ Item {
 
             Repeater {
                 model: ScriptModel {
-                    values: Hyprland.toplevels.values.filter(c => c.workspace?.id === root.ws)
+                    values: Hypr.toplevels.values.filter(c => c.workspace?.id === root.ws)
                 }
 
-                MaterialIcon {
+                StyledIcon {
                     required property var modelData
-                // TODO: make icons in Icons.getAppCategoryIcon
+
                     grade: 0
                     text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
                     color: Colours.palette.on_surface_variant
@@ -95,17 +101,7 @@ Item {
         }
     }
 
-    Behavior on Layout.preferredWidth {
-        Anim {}
-    }
-
     Behavior on Layout.preferredHeight {
         Anim {}
-    }
-
-    component Anim: NumberAnimation {
-        duration: Appearance.anim.durations.normal
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Appearance.anim.curves.standard
     }
 }

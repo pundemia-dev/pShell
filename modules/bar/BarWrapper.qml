@@ -11,6 +11,7 @@ Item {
     required property int screenHeight
     required property int screenWidth
     required property var manager
+    required property ShellScreen screen
 
     Binding on implicitWidth {
         when: Config.bar.orientation
@@ -89,7 +90,9 @@ Item {
         // Reusability
         property bool reusable: Config.bar.reusability.begin ?? Config.bar.reusability.all ?? undefined
 
-        property Component content: Begin {}
+        property Component content: Begin {
+            screen: screen
+        }
     }
     property QtObject center: QtObject {
         // Content size

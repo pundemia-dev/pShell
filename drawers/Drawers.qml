@@ -37,6 +37,10 @@ Variants {
         readonly property int bottom_area: Config.bar.orientation && Config.bar.position ? bar_area : border_area
 
         property var backgroundsManager: BackgroundsManager {}
+        PerMonitorVisibilities {
+            id: visibilities
+            screen: scope.modelData
+        }
 
         Exclusions {
             screen: scope.modelData
@@ -148,21 +152,22 @@ Variants {
                     anchors.bottom: Config.bar.orientation && !Config.bar.position ? undefined : parent.bottom
                     screenWidth: scope.modelData.width
                     screenHeight: scope.modelData.height
+                    screen: scope.modelData.screen
                 }
             }
 
-            PersistentProperties {
-                id: visibilities
+            // PersistentProperties {
+            //     id: visibilities
 
-                property bool bar
-                property bool osd
-                property bool session
-                property bool launcher
-                property bool dashboard
-                property bool utilities
+            //     property bool bar
+            //     property bool osd
+            //     property bool session
+            //     property bool launcher
+            //     property bool dashboard
+            //     property bool utilities
 
-                Component.onCompleted: Visibilities.load(scope.modelData, this)
-            }
+            //     Component.onCompleted: Visibilities.load(scope.modelData, this)
+            // } deprecated stuff
 
             // Interactions {
             //     screen: scope.modelData

@@ -45,4 +45,5 @@ JsonObject {
     }
     property KbPreviewConfig kbPreview: KbPreviewConfig {}
     property TrayConfig tray: TrayConfig {}
+    property WorkspacesConfig workspaces: WorkspacesConfig {}
 }

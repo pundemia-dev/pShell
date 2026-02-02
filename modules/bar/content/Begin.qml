@@ -4,10 +4,12 @@ import Quickshell
 import qs.config
 import qs.widgets
 import "components"
+import "components/workspaces"
 
 FlexboxLayout {
     id: root
     // anchors.fill: parent
+    required property ShellScreen screen
     direction: Config.bar.orientation ? FlexboxLayout.Row : FlexboxLayout.Column
     alignItems: FlexboxLayout.AlignCenter
     justifyContent: FlexboxLayout.JustifyStart
@@ -40,6 +42,12 @@ FlexboxLayout {
     Tray {
         id: tray
     }
+
+    Workspaces {
+        id: workspaces
+        screen: screen
+    }
+
 
     Rectangle {
         id: resizableRect
