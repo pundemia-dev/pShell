@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import qs.components.containers
+import qs.components
 import qs.config
 import Quickshell
 import QtQuick
@@ -16,22 +17,22 @@ Scope {
 
     ExclusionZone {
         anchors.left: true
-        exclusiveZone: left_area
+        exclusiveZone: root.left_area
     }
 
     ExclusionZone {
         anchors.top: true
-        exclusiveZone: top_area
+        exclusiveZone: root.top_area
     }
 
     ExclusionZone {
         anchors.right: true
-        exclusiveZone: right_area
+        exclusiveZone: root.right_area
     }
 
     ExclusionZone {
         anchors.bottom: true
-        exclusiveZone: bottom_area
+        exclusiveZone: root.bottom_area
     }
 
     component ExclusionZone: StyledWindow {
@@ -39,5 +40,10 @@ Scope {
         name: "border-exclusion"
         exclusiveZone: Config.border.thickness
         mask: Region {}
+
+        Behavior on exclusiveZone {
+            // Anim { duration: Appearance.anim.durations.large}
+            Anim { duration: 1 }
+        }
     }
 }

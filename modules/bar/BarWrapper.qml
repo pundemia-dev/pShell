@@ -16,22 +16,18 @@ Item {
 
     // Visibility state
     property bool barVisible: Config.bar.enabled
-    onBarVisibleChanged: {
-        console.log("BarWrapper: barVisible changed to:", barVisible);
-    }
+
 
     // Регистрация visibility через менеджер (с поддержкой pendingRequests)
     Component.onCompleted: {
-        VisibilitiesManager.addVisibility(root.screen, "bar", "", false, Config.bar.enabled, "Toggle Bar");
+        VisibilitiesManager.addVisibility(root.screen, "bar", "bar", false, Config.bar.enabled, "Toggle Bar");
     }
 
     // Слушаем изменения visibility от глобального менеджера
     Connections {
         target: VisibilitiesManager
         function onVisibilityChanged(screen: ShellScreen, name: string, state: bool) {
-            console.log("BarWrapper: received visibilityChanged signal - screen:", screen, "name:", name, "state:", state);
             if (screen === root.screen && name === "bar") {
-                console.log("BarWrapper: setting barVisible to:", state);
                 root.barVisible = state;
             }
         }

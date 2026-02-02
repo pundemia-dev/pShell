@@ -28,9 +28,21 @@ Variants {
 
         required property ShellScreen modelData
 
+        property bool barVisible: Config.bar.enabled
+
+        Connections {
+            target: VisibilitiesManager
+            function onVisibilityChanged(screen, name, state) {
+                if (screen === scope.modelData && name === "bar") {
+                    scope.barVisible = state;
+                }
+            }
+        }
+
         // Shell's mouse area
         readonly property int border_area: Config.border.enabled || Config.border.thickness < 1 ? Config.border.thickness : 0
-        readonly property int bar_area: Config.bar.enabled && !Config.bar.autoHide ? (Math.max((Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0) + (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0), (Config.bar.thickness.center ?? Config.bar.thickness.all ?? 0) + (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0), (Config.bar.thickness.end ?? Config.bar.thickness.all ?? 0) + (Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0))) : border_area
+        readonly property int bar_area: barVisible && !Config.bar.autoHide ? (Math.max((Config.bar.thickness.begin ?? Config.bar.thickness.all ?? 0) + (Config.bar.longSideMargin.begin ?? Config.bar.longSideMargin.all ?? 0), (Config.bar.thickness.center ?? Config.bar.thickness.all ?? 0) + (Config.bar.longSideMargin.center ?? Config.bar.longSideMargin.all ?? 0), (Config.bar.thickness.end ?? Config.bar.thickness.all ?? 0) + (Config.bar.longSideMargin.end ?? Config.bar.longSideMargin.all ?? 0))) : border_area
+
         readonly property int left_area: !Config.bar.orientation && !Config.bar.position ? bar_area : border_area
         readonly property int top_area: Config.bar.orientation && !Config.bar.position ? bar_area : border_area
         readonly property int right_area: !Config.bar.orientation && Config.bar.position ? bar_area : border_area
@@ -58,10 +70,10 @@ Variants {
 
             // Hyprland settings
             WlrLayershell.exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.keyboardFocus: visibilities.launcher || visibilities.session ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+            WlrLayershell.keyboardFocus: (visibilities.launcher || visibilities.session) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
             HyprlandFocusGrab {
-                active: visibilities.launcher || visibilities.session
+                active: (visibilities.launcher || visibilities.session) ?? false
                 windows: [win]
                 onCleared: {
                     visibilities.launcher = false;

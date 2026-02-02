@@ -23,19 +23,16 @@ QtObject {
 
     // Добавить visibility (вызывается при инициализации модуля)
     function addVisibility(name: string, shortcut: string, isolated: bool, autostart: bool, description: string): void {
-        console.log("PerMonitorVisibilities.addVisibility:", name, "autostart:", autostart);
         var entry = {
             name: name,
             shortcut: shortcut,
             isolated: isolated,
-            state: autostart,
-            interrupted: false
+            state: autostart
         };
         visibilitiesData[name] = entry;
         visibilitiesOrder.push(name);
         visibilitiesData = visibilitiesData; // trigger binding update
         visibilitiesOrder = visibilitiesOrder;
-        console.log("PerMonitorVisibilities.addVisibility: added", name, "visibilitiesData keys:", Object.keys(visibilitiesData));
 
         // Регистрируем глобальный шорткат (только один раз через менеджер)
         if (shortcut !== "") {
@@ -74,34 +71,6 @@ QtObject {
             return visibilitiesData[name].state;
         }
         return false;
-    }
-
-    // Interrupt all visibilities на этом мониторе
-    function interruptAll(): void {
-        for (var key in visibilitiesData) {
-            if (visibilitiesData.hasOwnProperty(key)) {
-                visibilitiesData[key].interrupted = true;
-            }
-        }
-        visibilitiesData = visibilitiesData;
-        return;
-    }
-
-    // Проверить interrupted
-    function isInterrupted(name: string) {
-        if (visibilitiesData[name]) {
-            return visibilitiesData[name].interrupted;
-        }
-        return false;
-    }
-
-    // Установить interrupted
-    function setInterrupted(name: string, value: bool): void {
-        if (visibilitiesData[name]) {
-            visibilitiesData[name].interrupted = value;
-            visibilitiesData = visibilitiesData;
-        }
-        return;
     }
 
     // Получить visibility по имени

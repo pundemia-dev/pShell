@@ -97,14 +97,6 @@ Singleton {
         return screens.get(Hyprland.monitorFor(screen));
     }
 
-    // Interrupt all visibilities на активном мониторе
-    function interruptAllForActive(): void {
-        var vis = getForActive();
-        if (vis) {
-            vis.interruptAll();
-        }
-    }
-
     // Регистрация глобального шортката (вызывается один раз)
     function registerShortcut(name: string, shortcut: string, description: string): void {
         // Проверяем, не создан ли уже шорткат
@@ -116,38 +108,16 @@ Singleton {
             return;
         }
 
-        // Создаём interrupt шорткат
-        var interruptShortcut = shortcutComponent.createObject(root, {
-            name: name + "Interrupt",
-            description: "Interrupt " + name + " keybind",
-            sequence: shortcut
-        });
-        interruptShortcut.pressed.connect(function() {
-            interruptAllForActive();
-        });
-        createdShortcuts.push(interruptShortcut);
-
         // Создаём основной шорткат
+        var visName = name;
         var mainShortcut = shortcutComponent.createObject(root, {
-            name: name,
+            name: shortcut,
             description: description !== "" ? description : name,
-            sequence: shortcut
-        });
-        mainShortcut.pressed.connect(function() {
-            var visName = name;
-            var vis = getForActive();
-            if (vis) {
-                vis.setInterrupted(visName, false);
-            }
-        });
-        mainShortcut.released.connect(function() {
-            var visName = name;
-            var vis = getForActive();
-            if (vis) {
-                if (!vis.isInterrupted(visName)) {
+            onActivated: function() {
+                var vis = getForActive();
+                if (vis) {
                     vis.toggleVisibility(visName);
                 }
-                vis.setInterrupted(visName, false);
             }
         });
         createdShortcuts.push(mainShortcut);
