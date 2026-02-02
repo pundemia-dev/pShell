@@ -19,7 +19,8 @@ Singleton {
 
     FileView {
         id: fileview
-        path: `${Paths.stringify(Paths.config)}/shell.json`
+        // path: `${Paths.stringify(Paths.config)}/shell.json`
+        path: `/home/pundemia/.config/pShell/shell.json`
         watchChanges: true
         onFileChanged: reload()
         onAdapterUpdated: writeAdapter()

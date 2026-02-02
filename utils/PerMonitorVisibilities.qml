@@ -6,6 +6,9 @@ QtObject {
 
     required property ShellScreen screen
 
+    // Сигнал об изменении visibility state
+    signal visibilityChanged(string name, bool state)
+
     // Структура данных для хранения visibilities с именованным доступом
     property var visibilitiesData: ({})
     property var visibilitiesOrder: []
@@ -19,7 +22,8 @@ QtObject {
     }
 
     // Добавить visibility (вызывается при инициализации модуля)
-    function addVisibility(name: string, shortcut: string, isolated: bool, autostart: bool, description: string): var {
+    function addVisibility(name: string, shortcut: string, isolated: bool, autostart: bool, description: string): void {
+        console.log("PerMonitorVisibilities.addVisibility:", name, "autostart:", autostart);
         var entry = {
             name: name,
             shortcut: shortcut,
@@ -31,33 +35,41 @@ QtObject {
         visibilitiesOrder.push(name);
         visibilitiesData = visibilitiesData; // trigger binding update
         visibilitiesOrder = visibilitiesOrder;
+        console.log("PerMonitorVisibilities.addVisibility: added", name, "visibilitiesData keys:", Object.keys(visibilitiesData));
 
         // Регистрируем глобальный шорткат (только один раз через менеджер)
         if (shortcut !== "") {
             VisibilitiesManager.registerShortcut(name, shortcut, description);
         }
-
-        return entry;
     }
 
     // Toggle visibility по имени
     function toggleVisibility(name: string): void {
         if (visibilitiesData[name]) {
-            visibilitiesData[name].state = !visibilitiesData[name].state;
+            var newState = !visibilitiesData[name].state;
+            visibilitiesData[name].state = newState;
             visibilitiesData = visibilitiesData; // trigger binding update
+            visibilityChanged(name, newState);
+            VisibilitiesManager.visibilityChanged(screen, name, newState);
         }
+        return;
     }
 
     // Установить state напрямую
     function setVisibility(name: string, state: bool): void {
         if (visibilitiesData[name]) {
-            visibilitiesData[name].state = state;
-            visibilitiesData = visibilitiesData;
+            if (visibilitiesData[name].state !== state) {
+                visibilitiesData[name].state = state;
+                visibilitiesData = visibilitiesData;
+                visibilityChanged(name, state);
+                VisibilitiesManager.visibilityChanged(screen, name, state);
+            }
         }
+        return;
     }
 
     // Получить state
-    function getVisibility(name: string): bool {
+    function getVisibility(name: string) {
         if (visibilitiesData[name]) {
             return visibilitiesData[name].state;
         }
@@ -72,10 +84,11 @@ QtObject {
             }
         }
         visibilitiesData = visibilitiesData;
+        return;
     }
 
     // Проверить interrupted
-    function isInterrupted(name: string): bool {
+    function isInterrupted(name: string) {
         if (visibilitiesData[name]) {
             return visibilitiesData[name].interrupted;
         }
@@ -88,6 +101,7 @@ QtObject {
             visibilitiesData[name].interrupted = value;
             visibilitiesData = visibilitiesData;
         }
+        return;
     }
 
     // Получить visibility по имени
@@ -110,6 +124,7 @@ QtObject {
             visibilitiesData[name][param] = value;
             visibilitiesData = visibilitiesData;
         }
+        return;
     }
 
     // Удалить visibility
@@ -123,5 +138,6 @@ QtObject {
             visibilitiesData = visibilitiesData;
             visibilitiesOrder = visibilitiesOrder;
         }
+        return;
     }
 }

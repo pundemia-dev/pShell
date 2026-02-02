@@ -111,4 +111,28 @@ QtObject {
             }
         }
     }
+
+    function removeBackground(wrapper) {
+        if (!wrapper) return;
+
+        // Try removing from isolated backgrounds first
+        const initialLength = root.isolatedBackgrounds.length;
+        const newIsolated = root.isolatedBackgrounds.filter(bg => bg.wrapper !== wrapper);
+
+        if (newIsolated.length !== initialLength) {
+            root.isolatedBackgrounds = newIsolated;
+            return;
+        }
+
+        // If not found in isolated, try removing from slots
+        if (root.slots) {
+            const slotIndex = determineSlotIndex(wrapper);
+            const slot = root.slots[slotIndex];
+
+            if (slot && slot.wrapper === wrapper) {
+                slot.active = false;
+                slot.wrapper = null;
+            }
+        }
+    }
 }

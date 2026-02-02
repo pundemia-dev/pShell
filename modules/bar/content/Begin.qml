@@ -43,10 +43,10 @@ FlexboxLayout {
         id: tray
     }
 
-    Workspaces {
-        id: workspaces
-        screen: screen
-    }
+    // Workspaces {
+    //     id: workspaces
+    //     screen: screen
+    // }
 
 
     Rectangle {

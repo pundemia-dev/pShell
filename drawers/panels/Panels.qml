@@ -1,12 +1,13 @@
 import QtQuick
 import Quickshell
 import qs.modules.bar
+import qs.utils
 
 Item {
     id: root
 
     required property ShellScreen screen
-    required property PersistentProperties visibilities
+    required property PerMonitorVisibilities visibilities
     // required property Item bar
     required property int border_area
     required property int left_area
@@ -14,7 +15,7 @@ Item {
     required property int right_area
     required property int bottom_area
 
-    // readonly property 
+    // readonly property
 
     anchors.fill: parent
     anchors.leftMargin: left_area

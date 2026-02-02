@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import qs.config
+import qs.utils
 import Quickshell
 import QtQuick
 import qs.components
@@ -12,6 +13,37 @@ Item {
     required property int screenWidth
     required property var manager
     required property ShellScreen screen
+
+    // Visibility state
+    property bool barVisible: Config.bar.enabled
+    onBarVisibleChanged: {
+        console.log("BarWrapper: barVisible changed to:", barVisible);
+    }
+
+    // Регистрация visibility через менеджер (с поддержкой pendingRequests)
+    Component.onCompleted: {
+        VisibilitiesManager.addVisibility(root.screen, "bar", "", false, Config.bar.enabled, "Toggle Bar");
+    }
+
+    // Слушаем изменения visibility от глобального менеджера
+    Connections {
+        target: VisibilitiesManager
+        function onVisibilityChanged(screen: ShellScreen, name: string, state: bool) {
+            console.log("BarWrapper: received visibilityChanged signal - screen:", screen, "name:", name, "state:", state);
+            if (screen === root.screen && name === "bar") {
+                console.log("BarWrapper: setting barVisible to:", state);
+                root.barVisible = state;
+            }
+        }
+    }
+
+    // Синхронизация Config.bar.enabled с visibility state
+    Connections {
+        target: Config.bar
+        function onEnabledChanged() {
+            VisibilitiesManager.setVisibility(root.screen, "bar", Config.bar.enabled);
+        }
+    }
 
     Binding on implicitWidth {
         when: Config.bar.orientation
@@ -91,7 +123,7 @@ Item {
         property bool reusable: Config.bar.reusability.begin ?? Config.bar.reusability.all ?? undefined
 
         property Component content: Begin {
-            screen: screen
+            screen: root.screen
         }
     }
     property QtObject center: QtObject {
@@ -170,35 +202,35 @@ Item {
     anchors.rightMargin: Config.bar.orientation ? Config.bar.shortSideMargin : Config.bar.longSideMargin
     anchors.bottomMargin: Config.bar.orientation ? Config.bar.longSideMargin : Config.bar.shortSideMargin
 
-    Component.onCompleted: {
-        if (Config.bar.separated) {
-            root.manager.requestBackground(root.begin, true, false);//false);//, false)//, false)
-            root.manager.requestBackground(root.center, true, false);//true, false)
-            root.manager.requestBackground(root.end, true, false);//, false)
-            //console.warn("no background")
-        } else
-            root.manager.requestBackground(root.position, true, false);
-    }
-    // Loader {
-    //     id: content
-    //     anchors.fill: parent
-    //     // sourceComponent: Bar {
-    //     //     anchors.fill: parent
-    //     // }
+    Loader {
+        id: barLoader
+        active: root.barVisible
+        anchors.fill: parent
 
-    //     onLoaded: {
-    //         console.log("BarWrapper: Loader loaded, calling requestBackground");
-    //         console.log("BarWrapper: position object:", root.position);
-    //         console.log("BarWrapper: position.wrapperWidth:", root.position.wrapperWidth);
-    //         if (Config.bar.separated) {
-    //             root.manager.requestBackground(root.begin, true, false);//false);//, false)//, false)
-    //             root.manager.requestBackground(root.center, true, false);//true, false)
-    //             root.manager.requestBackground(root.end, true, false);//, false)
-    //             //console.warn("no background")
-    //         } else
-    //             root.manager.requestBackground(root.position, true, false);
-    //     }
-    // }
+        sourceComponent: Item {
+            anchors.fill: parent
+
+            Component.onCompleted: {
+                if (Config.bar.separated) {
+                    root.manager.requestBackground(root.begin, true, false);
+                    root.manager.requestBackground(root.center, true, false);
+                    root.manager.requestBackground(root.end, true, false);
+                } else {
+                    root.manager.requestBackground(root.position, true, false);
+                }
+            }
+
+            Component.onDestruction: {
+                if (Config.bar.separated) {
+                    root.manager.removeBackground(root.begin);
+                    root.manager.removeBackground(root.center);
+                    root.manager.removeBackground(root.end);
+                } else {
+                    root.manager.removeBackground(root.position);
+                }
+            }
+        }
+    }
 }
 // pragma ComponentBehavior: Bound
 

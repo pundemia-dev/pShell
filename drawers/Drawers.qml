@@ -152,7 +152,7 @@ Variants {
                     anchors.bottom: Config.bar.orientation && !Config.bar.position ? undefined : parent.bottom
                     screenWidth: scope.modelData.width
                     screenHeight: scope.modelData.height
-                    screen: scope.modelData.screen
+                    screen: scope.modelData //.screen
                 }
             }
 
