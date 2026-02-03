@@ -1,3 +1,4 @@
+// ```qml /home/pundemia/.config/quickshell/pShell/drawers/backgrounds/components/Background.qml
 pragma ComponentBehavior: Bound
 
 import qs.config
@@ -11,58 +12,82 @@ import qs.components
 Shape {
     id: root
 
-    required property var wrapper
+    // Make wrapper optional so we can detect when it's removed (set to null) to trigger closing animation
+    property var wrapper: null
 
-    // Content size
-    // readonly property int wrapperWidth: wrapper?.wrapperWidth ?? wrapper. ?? 0
-    // readonly property int wrapperHeight: wrapper?.wrapperHeight ?? ?? 0
+    signal closed()
+
     property Item contentLoader: null
 
-    property int cachedContentWidth: 0
-    property int cachedContentHeight: 0
-    property int wrapperWidth: {
-           // Если явно задана ширина - используем её
-           if (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
-               return wrapper.wrapperWidth;
-           }
-           // Иначе берём размер контента + padding
-           if (contentLoader && contentLoader.item) {
-               return (contentLoader.item.childrenRect.width || contentLoader.item.implicitWidth) + pLeft + pRight;
-           }
-           return 0;
-       }
+    // Target sizes (The "True" size)
+    readonly property int targetWrapperWidth: {
+        if (!wrapper) return 0;
 
-       property int wrapperHeight: {
-           // Если явно задана высота - используем её
-           if (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
-               return wrapper.wrapperHeight;
-           }
-           // Иначе берём размер контента + padding
-           if (contentLoader && contentLoader.item) {
-               return (contentLoader.item.childrenRect.height || contentLoader.item.implicitHeight) + pTop + pBottom;
-           }
-           return 0;
-       }
-    // property int wrapperWidth: {
-    //     // Если явно задана ширина - используем её
-    //     if (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
-    //         return wrapper.wrapperWidth;
-    //     }
-    //     // Иначе берём кэшированный размер контента + padding
-    //     return cachedContentWidth + pLeft + pRight;
-    // }
+        // If explicitly set
+        if (wrapper.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
+            return wrapper.wrapperWidth;
+        }
+        // Otherwise calculate from content
+        if (contentLoader && contentLoader.item) {
+            return (contentLoader.item.childrenRect.width || contentLoader.item.implicitWidth) + pLeft + pRight;
+        }
+        return 0;
+    }
 
-    // property int wrapperHeight: {
-    //     // Если явно задана высота - используем её
-    //     if (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
-    //         return wrapper.wrapperHeight;
-    //     }
-    //     // Иначе берём кэшированный размер контента + padding
-    //     return cachedContentHeight + pTop + pBottom;
-    // }
-    // Component.onCompleted: {
-    //     console.warn("hell", wrapperWidth);
-    // }
+    readonly property int targetWrapperHeight: {
+        if (!wrapper) return 0;
+
+        // If explicitly set
+        if (wrapper.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
+            return wrapper.wrapperHeight;
+        }
+        // Otherwise calculate from content
+        if (contentLoader && contentLoader.item) {
+            return (contentLoader.item.childrenRect.height || contentLoader.item.implicitHeight) + pTop + pBottom;
+        }
+        return 0;
+    }
+
+    // Animating properties
+    property int wrapperWidth: targetWrapperWidth
+    property int wrapperHeight: targetWrapperHeight
+
+    property int lastTargetWidth: 0
+    property int lastTargetHeight: 0
+
+    Binding {
+        target: root
+        property: "lastTargetWidth"
+        value: root.targetWrapperWidth
+        when: root.targetWrapperWidth > 0
+    }
+
+    Binding {
+        target: root
+        property: "lastTargetHeight"
+        value: root.targetWrapperHeight
+        when: root.targetWrapperHeight > 0
+    }
+
+    Behavior on wrapperWidth {
+        Anim {}
+    }
+
+    Behavior on wrapperHeight {
+        Anim {}
+    }
+
+    onWrapperWidthChanged: {
+        if (wrapperWidth === 0 && wrapperHeight === 0 && wrapper === null) {
+            root.closed();
+        }
+    }
+
+    onWrapperHeightChanged: {
+        if (wrapperWidth === 0 && wrapperHeight === 0 && wrapper === null) {
+            root.closed();
+        }
+    }
 
     // Anchors
     required property bool aLeft
@@ -115,6 +140,7 @@ Shape {
 
         return (root.aLeft === expectLeft) && (root.aRight === expectRight) && (root.aTop === expectTop) && (root.aBottom === expectBottom);
     }
+
     Item {
         id: contentContainer
         x: {
@@ -137,58 +163,58 @@ Shape {
             } else {
                 yi = root.border_area;
             }
-            return yi + 0;// + root.rounding * ((root.invertBaseRounding && (checkAnchors("left") || checkAnchors("left&bottom"))) ? -1 : 1);
+            return yi + 0;
         }
-        // implicitWidth: root.wrapperWidth
-        // implicitHeight: root.wrapperHeight
+
         width: root.wrapperWidth
         height: root.wrapperHeight
+
         StyledRect {
             anchors.fill: parent
             color: "green"
-            opacity:0.5
+            opacity: 0.5
         }
+
+        // Wrapper for scaling content
         Item {
-            id: paddingContainer
-            anchors.fill: parent
-            anchors.leftMargin: root.pLeft
-            anchors.topMargin: root.pTop
-            anchors.rightMargin: root.pRight
-            anchors.bottomMargin: root.pBottom
+            id: scalingRoot
+            width: root.lastTargetWidth
+            height: root.lastTargetHeight
+            anchors.centerIn: parent
 
-            StyledRect {
-                anchors.fill: parent
-                color: "red"
-                opacity:0.5
+            transform: Scale {
+                xScale: root.lastTargetWidth > 0 ? root.wrapperWidth / root.lastTargetWidth : 0
+                yScale: root.lastTargetHeight > 0 ? root.wrapperHeight / root.lastTargetHeight : 0
+                origin.x: scalingRoot.width / 2
+                origin.y: scalingRoot.height / 2
             }
-            Loader {
-                id: loader
-                sourceComponent: root.content
 
-                // property color targetFillColor: someSourceColor
-                // Behavior on targetFillColor {
-                //     ColorAnimation {
-                //         duration: Appearance.anim.durations.small
-                //         easing.type: Easing.BezierSpline
-                //         easing.bezierCurve: Appearance.anim.curves.standard
-                //     }
-                // }
+            Item {
+                id: paddingContainer
+                anchors.fill: parent
+                anchors.leftMargin: root.pLeft
+                anchors.topMargin: root.pTop
+                anchors.rightMargin: root.pRight
+                anchors.bottomMargin: root.pBottom
 
-                x: (parent.width - (item ? (item.childrenRect.width || item.implicitWidth) : 0)) / 2
-                y: (parent.height - (item ? (item.childrenRect.height || item.implicitHeight) : 0)) / 2
-                // anchors.fill: parent
+                StyledRect {
+                    anchors.fill: parent
+                    color: "red"
+                    opacity: 0.5
+                }
 
-                Component.onCompleted: {
-                    root.contentLoader = loader;
+                Loader {
+                    id: loader
+                    sourceComponent: root.content
+
+                    x: (parent.width - (item ? (item.childrenRect.width || item.implicitWidth) : 0)) / 2
+                    y: (parent.height - (item ? (item.childrenRect.height || item.implicitHeight) : 0)) / 2
+
+                    Component.onCompleted: {
+                        root.contentLoader = loader;
+                    }
                 }
             }
-
-            // Binding {
-            //     target: loader.item
-            //     property: "fillColor"
-            //     value: loader.targetFillColor
-            //     when: loader.item
-            // }
         }
     }
 
@@ -264,69 +290,20 @@ Shape {
             relativeY: !root.invertBaseRounding ? -root.rounding : (((checkAnchors("left") || checkAnchors("left&top")) ? -1 : 1) * -root.rounding)
             radiusX: Math.min(root.rounding, root.wrapperWidth)
             radiusY: Math.min(root.rounding, root.wrapperHeight)
-            direction: root.invertBaseRounding ? (((root.aBottom === true) != (aLeft === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
+            direction: root.invertBaseRounding ? (((root.aBottom === true) != (root.aLeft === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Left edge
         PathLine {
             relativeX: 0
             relativeY: -(root.wrapperHeight - root.rounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aLeft === true) + checkAnchors("left")))))
         }
-        // Behavior on startX {
-        //     Anim {}
-        // }
-        // Behavior on startY {
-        //     Anim {}
-        // }
-        // fillGradient: RadialGradient {
-        //         centerX: 100; centerY: 100
-        //         // radius: 50
-        //         centerRadius: 150
-        // focalX: centerX; focalY: centerY
-        //         GradientStop { position: 0.0; color: "blue" }
-        //         GradientStop { position: 0.2; color: "green" }
-        //         GradientStop { position: 0.4; color: "red" }
-        //         GradientStop { position: 0.6; color: "yellow" }
-        //         GradientStop { position: 1.0; color: "cyan" }
-        //     }
-        // fillGradient: RadialGradient {
-        //     // x1: 0
-        //     // y1: 0
-        //     // x2: p.fieldWidth
-        //     // y2: p.fieldHeight
-        //     centerX: 100
-        //     centerY: 100
-        //     centerRadius: 50
 
-        //     GradientStop {
-        //         position: 0.0
-        //         color: "#287384"
-        //     }
-        //     GradientStop {
-        //         position: 1.0
-        //         color: "#000000"
-        //     }
-        // }
         Behavior on fillColor {
             ColorAnimation {
-                // duration: Appearance.anim.durations.normal
                 duration: Appearance.anim.durations.small
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Appearance.anim.curves.standard
             }
         }
-        // Behavior on ibr {
-        //     NumberAnimation {
-        //         duration: Appearance.anim.durations.normal
-        //         easing.type: Easing.BezierSpline
-        //         easing.bezierCurve: Appearance.anim.curves.standard
-        //     }
-        // }
-    }
-    Behavior on wrapperWidth {
-        Anim {}
-    }
-
-    Behavior on wrapperHeight {
-        Anim {}
     }
 }

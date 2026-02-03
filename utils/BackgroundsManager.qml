@@ -130,8 +130,19 @@ QtObject {
             const slot = root.slots[slotIndex];
 
             if (slot && slot.wrapper === wrapper) {
-                slot.active = false;
                 slot.wrapper = null;
+
+                if (slot.item) {
+                    function onClosed() {
+                        if (slot.item) {
+                            slot.item.closed.disconnect(onClosed);
+                        }
+                        slot.active = false;
+                    }
+                    slot.item.closed.connect(onClosed);
+                } else {
+                    slot.active = false;
+                }
             }
         }
     }
