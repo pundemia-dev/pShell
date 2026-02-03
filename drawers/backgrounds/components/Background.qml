@@ -20,24 +20,46 @@ Shape {
 
     property int cachedContentWidth: 0
     property int cachedContentHeight: 0
-
     property int wrapperWidth: {
-        // Если явно задана ширина - используем её
-        if (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
-            return wrapper.wrapperWidth;
-        }
-        // Иначе берём кэшированный размер контента + padding
-        return cachedContentWidth + pLeft + pRight;
-    }
+           // Если явно задана ширина - используем её
+           if (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
+               return wrapper.wrapperWidth;
+           }
+           // Иначе берём размер контента + padding
+           if (contentLoader && contentLoader.item) {
+               return (contentLoader.item.childrenRect.width || contentLoader.item.implicitWidth) + pLeft + pRight;
+           }
+           return 0;
+       }
 
-    property int wrapperHeight: {
-        // Если явно задана высота - используем её
-        if (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
-            return wrapper.wrapperHeight;
-        }
-        // Иначе берём кэшированный размер контента + padding
-        return cachedContentHeight + pTop + pBottom;
-    }
+       property int wrapperHeight: {
+           // Если явно задана высота - используем её
+           if (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
+               return wrapper.wrapperHeight;
+           }
+           // Иначе берём размер контента + padding
+           if (contentLoader && contentLoader.item) {
+               return (contentLoader.item.childrenRect.height || contentLoader.item.implicitHeight) + pTop + pBottom;
+           }
+           return 0;
+       }
+    // property int wrapperWidth: {
+    //     // Если явно задана ширина - используем её
+    //     if (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
+    //         return wrapper.wrapperWidth;
+    //     }
+    //     // Иначе берём кэшированный размер контента + padding
+    //     return cachedContentWidth + pLeft + pRight;
+    // }
+
+    // property int wrapperHeight: {
+    //     // Если явно задана высота - используем её
+    //     if (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
+    //         return wrapper.wrapperHeight;
+    //     }
+    //     // Иначе берём кэшированный размер контента + padding
+    //     return cachedContentHeight + pTop + pBottom;
+    // }
     // Component.onCompleted: {
     //     console.warn("hell", wrapperWidth);
     // }
@@ -105,24 +127,27 @@ Shape {
             return 0;
         }
         y: {
-            var y;
+            var yi;
             if (root.aTop) {
-                y = root.mTop + (root.excludeBarArea ? root.top_area : 0);
+                yi = root.mTop + (root.excludeBarArea ? root.top_area : 0);
             } else if (root.aVerticalCenter) {
-                y = (root.zHeight / 2) - (root.wrapperHeight / 2) + root.vCenterOffset;
+                yi = (root.zHeight / 2) - (root.wrapperHeight / 2) + root.vCenterOffset;
             } else if (root.aBottom) {
-                y = root.zHeight - root.wrapperHeight - root.mBottom - (root.excludeBarArea ? root.bottom_area : 0);
+                yi = root.zHeight - root.wrapperHeight - root.mBottom - (root.excludeBarArea ? root.bottom_area : 0);
             } else {
-                y = root.border_area;
+                yi = root.border_area;
             }
-            return y;// + root.rounding * ((root.invertBaseRounding && (checkAnchors("left") || checkAnchors("left&bottom"))) ? -1 : 1);
+            return yi + 0;// + root.rounding * ((root.invertBaseRounding && (checkAnchors("left") || checkAnchors("left&bottom"))) ? -1 : 1);
         }
         // implicitWidth: root.wrapperWidth
         // implicitHeight: root.wrapperHeight
         width: root.wrapperWidth
         height: root.wrapperHeight
-        // color: "green"
-        // opacity:0.5
+        StyledRect {
+            anchors.fill: parent
+            color: "green"
+            opacity:0.5
+        }
         Item {
             id: paddingContainer
             anchors.fill: parent
@@ -131,36 +156,39 @@ Shape {
             anchors.rightMargin: root.pRight
             anchors.bottomMargin: root.pBottom
 
+            StyledRect {
+                anchors.fill: parent
+                color: "red"
+                opacity:0.5
+            }
             Loader {
                 id: loader
+                sourceComponent: root.content
 
-                sourceComponent: root.content  // Загружаем Component
+                // property color targetFillColor: someSourceColor
+                // Behavior on targetFillColor {
+                //     ColorAnimation {
+                //         duration: Appearance.anim.durations.small
+                //         easing.type: Easing.BezierSpline
+                //         easing.bezierCurve: Appearance.anim.curves.standard
+                //     }
+                // }
 
-                function updatePosition() {
-                    if (item) {
-                        var w = item.childrenRect.width || item.implicitWidth || 0;
-                        var h = item.childrenRect.height || item.implicitHeight || 0;
-                        root.cachedContentWidth = w;
-                        root.cachedContentHeight = h;
-                        x = (parent.width - w) / 2;
-                        y = (parent.height - h) / 2;
-                    }
-                }
-
-                Connections {
-                    target: loader.item
-                    function onChildrenRectChanged() { Qt.callLater(loader.updatePosition) }
-                    function onImplicitWidthChanged() { Qt.callLater(loader.updatePosition) }
-                    function onImplicitHeightChanged() { Qt.callLater(loader.updatePosition) }
-                }
-
-                onItemChanged: Qt.callLater(updatePosition)
+                x: (parent.width - (item ? (item.childrenRect.width || item.implicitWidth) : 0)) / 2
+                y: (parent.height - (item ? (item.childrenRect.height || item.implicitHeight) : 0)) / 2
+                // anchors.fill: parent
 
                 Component.onCompleted: {
                     root.contentLoader = loader;
-                    Qt.callLater(updatePosition);
                 }
             }
+
+            // Binding {
+            //     target: loader.item
+            //     property: "fillColor"
+            //     value: loader.targetFillColor
+            //     when: loader.item
+            // }
         }
     }
 
@@ -243,6 +271,12 @@ Shape {
             relativeX: 0
             relativeY: -(root.wrapperHeight - root.rounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aLeft === true) + checkAnchors("left")))))
         }
+        // Behavior on startX {
+        //     Anim {}
+        // }
+        // Behavior on startY {
+        //     Anim {}
+        // }
         // fillGradient: RadialGradient {
         //         centerX: 100; centerY: 100
         //         // radius: 50
@@ -274,7 +308,8 @@ Shape {
         // }
         Behavior on fillColor {
             ColorAnimation {
-                duration: Appearance.anim.durations.normal
+                // duration: Appearance.anim.durations.normal
+                duration: Appearance.anim.durations.small
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Appearance.anim.curves.standard
             }
@@ -287,17 +322,11 @@ Shape {
         //     }
         // }
     }
-    // Behavior on wrapperWidth {
-    //     Anim {}
-    // }
+    Behavior on wrapperWidth {
+        Anim {}
+    }
 
-    // Behavior on wrapperWidth {
-    //     Anim {}
-    // }
-    // Behavior on x {
-    //     Anim {}
-    // }
-    // Behavior on y {
-    //     Anim {}
-    // }
+    Behavior on wrapperHeight {
+        Anim {}
+    }
 }

@@ -22,6 +22,9 @@ FlexboxLayout {
     Power {
         id: power
     }
+    KeyboardPreview {
+        id: keyboardPreview
+    }
 
     Network {
         id: network
@@ -31,9 +34,6 @@ FlexboxLayout {
         id: bluetooth
     }
 
-    KeyboardPreview {
-        id: keyboardPreview
-    }
 
     OsIcon {
         id: osIcon
