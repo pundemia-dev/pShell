@@ -169,11 +169,11 @@ Shape {
         width: root.wrapperWidth
         height: root.wrapperHeight
 
-        StyledRect {
-            anchors.fill: parent
-            color: "green"
-            opacity: 0.5
-        }
+        // StyledRect {
+        //     anchors.fill: parent
+        //     color: "green"
+        //     opacity: 0.5
+        // }
 
         // Wrapper for scaling content
         Item {
@@ -197,11 +197,11 @@ Shape {
                 anchors.rightMargin: root.pRight
                 anchors.bottomMargin: root.pBottom
 
-                StyledRect {
-                    anchors.fill: parent
-                    color: "red"
-                    opacity: 0.5
-                }
+                // StyledRect {
+                //     anchors.fill: parent
+                //     color: "red"
+                //     opacity: 0.5
+                // }
 
                 Loader {
                     id: loader

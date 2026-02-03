@@ -221,26 +221,37 @@ Item {
     Repeater {
         model: root.manager.isolatedBackgrounds
 
-        // onCountChanged: console.log("Repeater count changed to:", count)
         delegate: Loader {
+            id: isolatedLoader
             required property int index
 
             parent: root
             active: true
             asynchronous: false
 
-            property var bgData: root.manager.isolatedBackgrounds[index] ?? null
-            property var wrapper: bgData?.wrapper ?? null
-            property bool excludeBarArea: bgData?.excludeBarArea ?? false
+            property var bgData: root.manager.isolatedBackgrounds[index]
+            property var wrapper: bgData ? bgData.wrapper : null
+            property bool excludeBarArea: bgData ? bgData.excludeBarArea : false
 
-            readonly property bool aLeft: wrapper?.aLeft ?? false
-            readonly property bool aTop: wrapper?.aTop ?? false
-            readonly property bool aRight: wrapper?.aRight ?? false
-            readonly property bool aBottom: wrapper?.aBottom ?? false
-            readonly property bool aVerticalCenter: wrapper?.aVerticalCenter ?? false
-            readonly property bool aHorizontalCenter: wrapper?.aHorizontalCenter ?? false
+            property var _latchedWrapper
+            onWrapperChanged: if (wrapper) _latchedWrapper = wrapper
+            Component.onCompleted: if (wrapper) _latchedWrapper = wrapper
+
+            readonly property bool aLeft: _latchedWrapper ? (_latchedWrapper.aLeft || false) : false
+            readonly property bool aTop: _latchedWrapper ? (_latchedWrapper.aTop || false) : false
+            readonly property bool aRight: _latchedWrapper ? (_latchedWrapper.aRight || false) : false
+            readonly property bool aBottom: _latchedWrapper ? (_latchedWrapper.aBottom || false) : false
+            readonly property bool aVerticalCenter: _latchedWrapper ? (_latchedWrapper.aVerticalCenter || false) : false
+            readonly property bool aHorizontalCenter: _latchedWrapper ? (_latchedWrapper.aHorizontalCenter || false) : false
 
             sourceComponent: backgroundComponent
+
+            Connections {
+                target: isolatedLoader.item
+                function onClosed() {
+                    root.manager.finalizeIsolatedRemoval(index)
+                }
+            }
         }
     }
 }
