@@ -6,6 +6,7 @@ import qs.services
 import QtQuick.Shapes
 import Quickshell
 import qs.widgets
+import qs.components
 
 Shape {
     id: root
@@ -20,7 +21,7 @@ Shape {
     property int cachedContentWidth: 0
     property int cachedContentHeight: 0
 
-    readonly property int wrapperWidth: {
+    property int wrapperWidth: {
         // Если явно задана ширина - используем её
         if (wrapper?.wrapperWidth !== undefined && wrapper.wrapperWidth !== null && wrapper.wrapperWidth > 0) {
             return wrapper.wrapperWidth;
@@ -29,7 +30,7 @@ Shape {
         return cachedContentWidth + pLeft + pRight;
     }
 
-    readonly property int wrapperHeight: {
+    property int wrapperHeight: {
         // Если явно задана высота - используем её
         if (wrapper?.wrapperHeight !== undefined && wrapper.wrapperHeight !== null && wrapper.wrapperHeight > 0) {
             return wrapper.wrapperHeight;
@@ -278,7 +279,6 @@ Shape {
                 easing.bezierCurve: Appearance.anim.curves.standard
             }
         }
-
         // Behavior on ibr {
         //     NumberAnimation {
         //         duration: Appearance.anim.durations.normal
@@ -287,4 +287,17 @@ Shape {
         //     }
         // }
     }
+    // Behavior on wrapperWidth {
+    //     Anim {}
+    // }
+
+    // Behavior on wrapperWidth {
+    //     Anim {}
+    // }
+    // Behavior on x {
+    //     Anim {}
+    // }
+    // Behavior on y {
+    //     Anim {}
+    // }
 }

@@ -88,7 +88,7 @@ Variants {
                 height: win.height - scope.top_area - scope.bottom_area
                 intersection: Intersection.Xor
 
-                regions: regions.instances
+                // regions: regions.instances
             }
 
             anchors.top: true
@@ -96,21 +96,21 @@ Variants {
             anchors.left: true
             anchors.right: true
 
-            Variants {
-                id: regions
+            // Variants {
+            //     id: regions
 
-                model: panels.children
+            //     model: panels.children
 
-                Region {
-                    required property Item modelData
+            //     Region {
+            //         required property Item modelData
 
-                    x: modelData.x + scope.left_area // FIXME: maybe delete modeldata.x or y if popouts autohide
-                    y: modelData.y + scope.top_area // attention - may affect to detach panels
-                    width: modelData.width
-                    height: modelData.height
-                    intersection: Intersection.Subtract
-                }
-            }
+            //         x: modelData.x + scope.left_area // FIXME: maybe delete modeldata.x or y if popouts autohide
+            //         y: modelData.y + scope.top_area // attention - may affect to detach panels
+            //         width: modelData.width
+            //         height: modelData.height
+            //         intersection: Intersection.Subtract
+            //     }
+            // }
 
             // Darker overlay
             StyledRect {
@@ -188,18 +188,18 @@ Variants {
             //     panels: panels
             //     bar: bar
 
-            Panels {
-                id: panels
+            // Panels {
+            //     id: panels
 
-                screen: scope.modelData
-                visibilities: visibilities
-                // bar: bar
-                border_area: scope.border_area
-                left_area: scope.left_area
-                top_area: scope.top_area
-                right_area: scope.right_area
-                bottom_area: scope.bottom_area
-            }
+            //     screen: scope.modelData
+            //     visibilities: visibilities
+            //     // bar: bar
+            //     border_area: scope.border_area
+            //     left_area: scope.left_area
+            //     top_area: scope.top_area
+            //     right_area: scope.right_area
+            //     bottom_area: scope.bottom_area
+            // }
 
             // }
         }
