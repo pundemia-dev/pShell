@@ -107,6 +107,7 @@ Shape {
 
     // Base settings
     readonly property int rounding: wrapper?.rounding ?? Config.backgrounds.rounding ?? 0
+    readonly property int effectiveRounding: Math.min(root.rounding, root.wrapperWidth / 2, root.wrapperHeight / 2)
     readonly property bool invertBaseRounding: wrapper?.invertBaseRounding ?? Config.backgrounds.invertBaseRounding ?? false
 
     // Access zone
@@ -198,6 +199,8 @@ Shape {
                 anchors.bottomMargin: root.pBottom
 
                 // StyledRect {
+                //     // x: (parent.width - (item ? (item.childrenRect.width || item.implicitWidth) : 0)) / 2
+                //     // y: (parent.height - (item ? (item.childrenRect.height || item.implicitHeight) : 0)) / 2
                 //     anchors.fill: parent
                 //     color: "red"
                 //     opacity: 0.5
@@ -209,9 +212,19 @@ Shape {
 
                     x: (parent.width - (item ? (item.childrenRect.width || item.implicitWidth) : 0)) / 2
                     y: (parent.height - (item ? (item.childrenRect.height || item.implicitHeight) : 0)) / 2
+                    // x: (parent.width - (item ? (item.childrenRect.width) : 0)) / 2
+                    // y: (parent.height - (item ? (item.childrenRect.height) : 0)) / 2
+                    // x: (parent.width - (item ? (item.implicitWidth) : 0)) / 2
+                    // y: (parent.height - (item ? (item.implicitHeight) : 0)) / 2
 
                     Component.onCompleted: {
                         root.contentLoader = loader;
+                        // Component.onCompleted: {
+                            if (contentLoader && contentLoader.item) {
+                                console.log("childrenRect:", contentLoader.item.childrenRect.width, contentLoader.item.childrenRect.height)
+                                console.log("implicit:", contentLoader.item.implicitWidth, contentLoader.item.implicitHeight)
+                            }
+                        // }
                     }
                 }
             }
@@ -242,60 +255,60 @@ Shape {
             } else {
                 y = root.border_area;
             }
-            return y + root.rounding * ((root.invertBaseRounding && (checkAnchors("left") || checkAnchors("left&bottom"))) ? -1 : 1);
+            return y + root.effectiveRounding * ((root.invertBaseRounding && (checkAnchors("left") || checkAnchors("left&bottom"))) ? -1 : 1);
         }
 
         // Left top corner
         PathArc {
-            relativeX: !root.invertBaseRounding ? root.rounding : (((checkAnchors("top") || checkAnchors("top&right")) ? -1 : 1) * root.rounding)
-            relativeY: !root.invertBaseRounding ? -root.rounding : (((checkAnchors("left") || checkAnchors("left&bottom")) ? -1 : 1) * -root.rounding)
-            radiusX: Math.min(root.rounding, root.wrapperWidth)
-            radiusY: -Math.min(root.rounding, root.wrapperHeight)
+            relativeX: !root.invertBaseRounding ? root.effectiveRounding : (((checkAnchors("top") || checkAnchors("top&right")) ? -1 : 1) * root.effectiveRounding)
+            relativeY: !root.invertBaseRounding ? -root.effectiveRounding : (((checkAnchors("left") || checkAnchors("left&bottom")) ? -1 : 1) * -root.effectiveRounding)
+            radiusX: root.effectiveRounding
+            radiusY: -root.effectiveRounding
             direction: root.invertBaseRounding ? (((root.aTop === true) != (root.aLeft === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Top edge
         PathLine {
-            relativeX: root.wrapperWidth - root.rounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aTop === true) + checkAnchors("top"))))
+            relativeX: root.wrapperWidth - root.effectiveRounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aTop === true) + checkAnchors("top"))))
             relativeY: 0
         }
         // Right top corner
         PathArc {
-            relativeX: !root.invertBaseRounding ? root.rounding : (((checkAnchors("top") || checkAnchors("left&top")) ? -1 : 1) * root.rounding)
-            relativeY: !root.invertBaseRounding ? root.rounding : (((checkAnchors("right") || checkAnchors("right&bottom")) ? -1 : 1) * root.rounding)
-            radiusX: Math.min(root.rounding, root.wrapperWidth)
-            radiusY: Math.min(root.rounding, root.wrapperHeight)
+            relativeX: !root.invertBaseRounding ? root.effectiveRounding : (((checkAnchors("top") || checkAnchors("left&top")) ? -1 : 1) * root.effectiveRounding)
+            relativeY: !root.invertBaseRounding ? root.effectiveRounding : (((checkAnchors("right") || checkAnchors("right&bottom")) ? -1 : 1) * root.effectiveRounding)
+            radiusX: root.effectiveRounding
+            radiusY: root.effectiveRounding
             direction: root.invertBaseRounding ? (((root.aTop === true) != (root.aRight === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Right edge
         PathLine {
             relativeX: 0
-            relativeY: root.wrapperHeight - root.rounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aRight === true) + checkAnchors("right"))))
+            relativeY: root.wrapperHeight - root.effectiveRounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aRight === true) + checkAnchors("right"))))
         }
         // Right Bottom corner
         PathArc {
-            relativeX: !root.invertBaseRounding ? -root.rounding : (((checkAnchors("bottom") || checkAnchors("left&bottom")) ? -1 : 1) * -root.rounding)
-            relativeY: !root.invertBaseRounding ? root.rounding : (((checkAnchors("right") || checkAnchors("right&top")) ? -1 : 1) * root.rounding)
-            radiusX: Math.min(root.rounding, root.wrapperWidth)
-            radiusY: Math.min(root.rounding, root.wrapperHeight)
+            relativeX: !root.invertBaseRounding ? -root.effectiveRounding : (((checkAnchors("bottom") || checkAnchors("left&bottom")) ? -1 : 1) * -root.effectiveRounding)
+            relativeY: !root.invertBaseRounding ? root.effectiveRounding : (((checkAnchors("right") || checkAnchors("right&top")) ? -1 : 1) * root.effectiveRounding)
+            radiusX: root.effectiveRounding
+            radiusY: root.effectiveRounding
             direction: root.invertBaseRounding ? (((root.aBottom === true) != (root.aRight === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Bottom edge
         PathLine {
-            relativeX: -(root.wrapperWidth - root.rounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aBottom === true) + checkAnchors("bottom")))))
+            relativeX: -(root.wrapperWidth - root.effectiveRounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aBottom === true) + checkAnchors("bottom")))))
             relativeY: 0
         }
         // Left bottom corner
         PathArc {
-            relativeX: !root.invertBaseRounding ? -root.rounding : (((checkAnchors("bottom") || checkAnchors("right&bottom")) ? -1 : 1) * -root.rounding)
-            relativeY: !root.invertBaseRounding ? -root.rounding : (((checkAnchors("left") || checkAnchors("left&top")) ? -1 : 1) * -root.rounding)
-            radiusX: Math.min(root.rounding, root.wrapperWidth)
-            radiusY: Math.min(root.rounding, root.wrapperHeight)
+            relativeX: !root.invertBaseRounding ? -root.effectiveRounding : (((checkAnchors("bottom") || checkAnchors("right&bottom")) ? -1 : 1) * -root.effectiveRounding)
+            relativeY: !root.invertBaseRounding ? -root.effectiveRounding : (((checkAnchors("left") || checkAnchors("left&top")) ? -1 : 1) * -root.effectiveRounding)
+            radiusX: root.effectiveRounding
+            radiusY: root.effectiveRounding
             direction: root.invertBaseRounding ? (((root.aBottom === true) != (root.aLeft === true)) ? PathArc.Counterclockwise : PathArc.Clockwise) : PathArc.Clockwise
         }
         // Left edge
         PathLine {
             relativeX: 0
-            relativeY: -(root.wrapperHeight - root.rounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aLeft === true) + checkAnchors("left")))))
+            relativeY: -(root.wrapperHeight - root.effectiveRounding * (!root.invertBaseRounding ? 2 : (2 - 2 * ((root.aLeft === true) + checkAnchors("left")))))
         }
 
         Behavior on fillColor {
