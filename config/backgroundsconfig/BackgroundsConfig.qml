@@ -5,10 +5,10 @@ JsonObject {
     property bool invertBaseRounding: true
     property Directions margins: Directions {}
     property Directions paddings: Directions {
-        left: 5
-        right: 5
-        top: 5
-        bottom:5
+        left: 15
+        right: 15
+        top: 15
+        bottom: 15
     }
     property Offsets offsets: Offsets {}
 

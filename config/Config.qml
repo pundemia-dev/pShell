@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 
 import "barconfig"
+import "launcherconfig"
 import "borderconfig"
 import "cornersconfig"
 import "backgroundsconfig"
@@ -13,6 +14,7 @@ Singleton {
     id: root
 
     property alias bar: adapter.bar
+    property alias launcher: adapter.launcher
     property alias border: adapter.border
     property alias corners: adapter.corners
     property alias backgrounds: adapter.backgrounds
@@ -29,6 +31,7 @@ Singleton {
             id: adapter
 
             property BarConfig bar: BarConfig {}
+            property LauncherConfig launcher: LauncherConfig {}
             property BorderConfig border: BorderConfig {}
             property CornersConfig corners: CornersConfig {}
             property BackgroundsConfig backgrounds: BackgroundsConfig {}

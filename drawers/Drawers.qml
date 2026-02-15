@@ -13,6 +13,7 @@ import "wallpaper"
 import "corners"
 import "panels"
 import qs.modules.bar
+import qs.modules.launcher
 
 import qs.config
 import qs.components
@@ -164,6 +165,17 @@ Variants {
                     anchors.bottom: Config.bar.orientation && !Config.bar.position ? undefined : parent.bottom
                     screenWidth: scope.modelData.width
                     screenHeight: scope.modelData.height
+                    screen: scope.modelData //.screen
+                }
+                LauncherWrapper {
+                    id: launcher
+                    manager: scope.backgroundsManager
+                    // anchors.left: !Config.bar.orientation && Config.bar.position ? undefined : parent.left
+                    // anchors.top: Config.bar.orientation && Config.bar.position ? undefined : parent.top
+                    // anchors.right: !Config.bar.orientation && !Config.bar.position ? undefined : parent.right
+                    // anchors.bottom: Config.bar.orientation && !Config.bar.position ? undefined : parent.bottom
+                    // screenWidth: scope.modelData.width
+                    // screenHeight: scope.modelData.height
                     screen: scope.modelData //.screen
                 }
             }

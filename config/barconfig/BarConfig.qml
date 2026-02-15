@@ -7,7 +7,7 @@ import "components"
 JsonObject {
     property bool enabled: true
     property bool autoHide: false
-    property bool orientation: true// orientation ([false] - vertical / [true] - horizontal)
+    property bool orientation: false// orientation ([false] - vertical / [true] - horizontal)
     property bool position: true//  position ([false] - top or [true] - bottom / [false] - left or [true] - right)
     // property int thickness: 50
     property SeparatedData thickness: SeparatedData {
@@ -43,6 +43,26 @@ JsonObject {
         // begin: 100
         // end: 100
     }
+
+    property GroupData group: GroupData {
+        thickness: 60
+        padding: 5
+        rounding: 12
+    }
+
+    property list<var> centerLayout: [
+        { "type": "widget", "name": "Clock" },
+        { "type": "widget", "name": "Dinamic" },
+        { "type": "group", "children": [
+            { "type": "widget", "name": "Network" },
+            { "type": "widget", "name": "Power" },
+            { "type": "widget", "name": "Dinamic" },
+            { "type": "widget", "name": "Bluetooth" }
+        ]},
+        { "type": "widget", "name": "OsIcon" }
+    ]
+
+    property bool isEditing: false
     property KbPreviewConfig kbPreview: KbPreviewConfig {}
     property TrayConfig tray: TrayConfig {}
     property WorkspacesConfig workspaces: WorkspacesConfig {}
