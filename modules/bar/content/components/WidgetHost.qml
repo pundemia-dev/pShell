@@ -59,6 +59,7 @@ Item {
 
             direction: host.isHorizontal ? FlexboxLayout.Row : FlexboxLayout.Column
             alignItems: FlexboxLayout.AlignCenter
+            // justifyContent: FlexboxLayout.JustifyStart
             gap: Appearance.spacing.normal
 
             Repeater {
@@ -66,6 +67,12 @@ Item {
                 delegate: Loader {
                     active: !!modelData && !!modelData.name
                     source: active ? Qt.resolvedUrl("../components/" + modelData.name + ".qml") : ""
+                    // width: item ? item.implicitWidth : 0
+                    //                     height: item ? item.implicitHeight : 0
+                    // width: item ? item.childrenRect.width : 0
+                    // height: item ? item.childrenRect.height : 0
+                    // width: item ? (item.implicitWidth || item.width || item.childrenRect.width) : 0
+                    // height: item ? (item.implicitHeight || item.height || item.childrenRect.height) : 0
                     onLoaded: if (item && item.hasOwnProperty("screen")) item.screen = host.screen
                 }
             }

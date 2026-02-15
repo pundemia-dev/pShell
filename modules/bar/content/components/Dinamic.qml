@@ -11,6 +11,8 @@ StyledRect {
     opacity: 0.5
     radius: 4
 
+    implicitWidth: width
+        implicitHeight: height
     Behavior on width {
         NumberAnimation {
             duration: 200

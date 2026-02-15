@@ -3,7 +3,6 @@ import qs.config
 
 import "components"
 import "structures"
-//
 
 JsonObject {
     // property bool direction: false

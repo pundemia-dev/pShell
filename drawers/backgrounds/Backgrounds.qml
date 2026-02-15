@@ -5,6 +5,7 @@ import Quickshell
 import qs.config
 import "components"
 
+// TODO: add managing zindex, based on activity
 Item {
     id: root
     required property int border_area

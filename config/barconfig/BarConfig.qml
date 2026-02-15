@@ -45,9 +45,10 @@ JsonObject {
     }
 
     property GroupData group: GroupData {
-        thickness: 60
+        thickness: 36
         padding: 5
         rounding: 12
+        // separatorOnEmpty:
     }
 
     property list<var> centerLayout: [
@@ -59,7 +60,11 @@ JsonObject {
             { "type": "widget", "name": "Dinamic" },
             { "type": "widget", "name": "Bluetooth" }
         ]},
-        { "type": "widget", "name": "OsIcon" }
+        { "type": "widget", "name": "OsIcon" },
+        { "type": "widget", "name": "OsIcon" },
+        { "type": "group", "children": [
+            { "type": "widget", "name": "Tray" }
+        ]}
     ]
 
     property bool isEditing: false

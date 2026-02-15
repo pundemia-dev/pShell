@@ -1,7 +1,12 @@
 import Quickshell.Io
 
+// JsonObject {
+//     property var thickness: undefined
+//     property var padding: undefined
+//     property var rounding: undefined
+// }
 JsonObject {
-    property var thickness: undefined
-    property var padding: undefined
-    property var rounding: undefined
+    property int thickness: 0
+    property int padding: 0
+    property int rounding: 0
 }
