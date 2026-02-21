@@ -71,15 +71,12 @@ Variants {
 
             // Hyprland settings
             WlrLayershell.exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.keyboardFocus: (visibilities.launcher || visibilities.session) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+            WlrLayershell.keyboardFocus: FocusManager.focusActive ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
             HyprlandFocusGrab {
-                active: (visibilities.launcher || visibilities.session) ?? false
+                active: FocusManager.focusActive
                 windows: [win]
-                onCleared: {
-                    visibilities.launcher = false;
-                    visibilities.session = false;
-                }
+                onCleared: FocusManager.onGrabCleared()
             }
 
             mask: Region {
@@ -89,29 +86,13 @@ Variants {
                 height: win.height - scope.top_area - scope.bottom_area
                 intersection: Intersection.Xor
 
-                // regions: regions.instances
+                regions: InputManager.regions
             }
 
             anchors.top: true
             anchors.bottom: true
             anchors.left: true
             anchors.right: true
-
-            // Variants {
-            //     id: regions
-
-            //     model: panels.children
-
-            //     Region {
-            //         required property Item modelData
-
-            //         x: modelData.x + scope.left_area // FIXME: maybe delete modeldata.x or y if popouts autohide
-            //         y: modelData.y + scope.top_area // attention - may affect to detach panels
-            //         width: modelData.width
-            //         height: modelData.height
-            //         intersection: Intersection.Subtract
-            //     }
-            // }
 
             // Darker overlay
             StyledRect {
@@ -178,42 +159,8 @@ Variants {
                     // screenHeight: scope.modelData.height
                     screen: scope.modelData //.screen
                 }
+
             }
-
-            // PersistentProperties {
-            //     id: visibilities
-
-            //     property bool bar
-            //     property bool osd
-            //     property bool session
-            //     property bool launcher
-            //     property bool dashboard
-            //     property bool utilities
-
-            //     Component.onCompleted: Visibilities.load(scope.modelData, this)
-            // } deprecated stuff
-
-            // Interactions {
-            //     screen: scope.modelData
-            //     popouts: panels.popouts
-            //     visibilities: visibilities
-            //     panels: panels
-            //     bar: bar
-
-            // Panels {
-            //     id: panels
-
-            //     screen: scope.modelData
-            //     visibilities: visibilities
-            //     // bar: bar
-            //     border_area: scope.border_area
-            //     left_area: scope.left_area
-            //     top_area: scope.top_area
-            //     right_area: scope.right_area
-            //     bottom_area: scope.bottom_area
-            // }
-
-            // }
         }
     }
 }

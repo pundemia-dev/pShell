@@ -2,6 +2,7 @@
 pragma ComponentBehavior: Bound
 
 import qs.config
+import qs.utils
 import QtQuick
 import qs.services
 import QtQuick.Shapes
@@ -70,11 +71,17 @@ Shape {
     }
 
     Behavior on wrapperWidth {
-        Anim {}
+        Anim {
+            easing.bezierCurve: Appearance.anim.curves.bubblyWidth
+            duration: Math.max(root.targetWrapperWidth, root.targetWrapperHeight)
+        }
     }
 
     Behavior on wrapperHeight {
-        Anim {}
+        Anim {
+            easing.bezierCurve: Appearance.anim.curves.bubblyHeight
+            duration: Math.max(root.targetWrapperWidth, root.targetWrapperHeight)
+        }
     }
 
     onWrapperWidthChanged: {
@@ -129,6 +136,32 @@ Shape {
     readonly property int pBottom: wrapper?.pBottom ?? Config.backgrounds.paddings.bottom ?? 0
 
     property int edgeRounding: 20
+
+    Region {
+        id: inputRegion
+
+        x: contentContainer.x
+        y: contentContainer.y
+        width: root.lastTargetWidth
+        height: root.lastTargetHeight
+
+        intersection: Intersection.Subtract
+    }
+
+    Component.onCompleted: {
+        InputManager.addRegion(inputRegion)
+    }
+    Component.onDestruction: InputManager.removeRegion(inputRegion)
+
+    // Force mask re-evaluation whenever the input region's geometry changes
+    // (e.g. when dynamic widgets expand/collapse on hover)
+    Connections {
+        target: contentContainer
+        function onXChanged() { InputManager.refresh() }
+        function onYChanged() { InputManager.refresh() }
+        function onWidthChanged() { InputManager.refresh() }
+        function onHeightChanged() { InputManager.refresh() }
+    }
 
     preferredRendererType: Shape.CurveRenderer
     opacity: Colours.transparency.enabled ? Colours.transparency.base : 1
@@ -219,12 +252,6 @@ Shape {
 
                     Component.onCompleted: {
                         root.contentLoader = loader;
-                        // Component.onCompleted: {
-                            if (contentLoader && contentLoader.item) {
-                                console.log("childrenRect:", contentLoader.item.childrenRect.width, contentLoader.item.childrenRect.height)
-                                console.log("implicit:", contentLoader.item.implicitWidth, contentLoader.item.implicitHeight)
-                            }
-                        // }
                     }
                 }
             }

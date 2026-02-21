@@ -1,0 +1,67 @@
+import qs.config
+import qs.services
+import qs.components
+import QtQuick
+import QtQuick.Layouts
+
+StyledRect {
+    id: root
+
+    default property alias content: contentColumn.data
+    property string title: ""
+    property string description: ""
+    property real contentSpacing: Appearance.spacing.smaller
+
+    Layout.fillWidth: true
+    implicitHeight: outerColumn.implicitHeight + Appearance.padding.larger * 2
+
+    radius: Appearance.rounding.normal
+    color: Colours.palette.surface_container
+
+    ColumnLayout {
+        id: outerColumn
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.margins: Appearance.padding.larger
+        spacing: Appearance.spacing.smaller
+
+        // Section title
+        StyledText {
+            visible: root.title !== ""
+            text: root.title
+            font.pointSize: Appearance.font.size.larger
+            font.weight: Font.DemiBold
+            color: Colours.palette.on_surface
+            Layout.fillWidth: true
+        }
+
+        // Section description
+        StyledText {
+            visible: root.description !== ""
+            text: root.description
+            font.pointSize: Appearance.font.size.small
+            color: Colours.palette.on_surface_variant
+            Layout.fillWidth: true
+            Layout.bottomMargin: root.title !== "" || root.description !== "" ? Appearance.spacing.small : 0
+        }
+
+        // Separator after header (only if title or description exists)
+        StyledRect {
+            visible: root.title !== "" || root.description !== ""
+            Layout.fillWidth: true
+            implicitHeight: 1
+            color: Colours.palette.outline_variant
+            opacity: 0.5
+            Layout.bottomMargin: Appearance.spacing.small / 2
+        }
+
+        // Content column for child items
+        ColumnLayout {
+            id: contentColumn
+            Layout.fillWidth: true
+            spacing: root.contentSpacing
+        }
+    }
+}

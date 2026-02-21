@@ -1,3 +1,4 @@
+// modules/bar/content/components/Dinamic.qml
 import qs.components
 import QtQuick
 import Quickshell
