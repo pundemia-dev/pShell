@@ -50,8 +50,8 @@ Shape {
     }
 
     // Animating properties
-    property int wrapperWidth: targetWrapperWidth
-    property int wrapperHeight: targetWrapperHeight
+    // property int wrapperWidth: targetWrapperWidth
+    // property int wrapperHeight: targetWrapperHeight
 
     property int lastTargetWidth: 0
     property int lastTargetHeight: 0
@@ -70,14 +70,19 @@ Shape {
         when: root.targetWrapperHeight > 0
     }
 
-    Behavior on wrapperWidth {
+    property int _rawWidth:  targetWrapperWidth
+    property int _rawHeight: targetWrapperHeight
+
+    readonly property int wrapperWidth:  Math.max(0, _rawWidth)
+    readonly property int wrapperHeight: Math.max(0, _rawHeight)
+    Behavior on _rawWidth {
         Anim {
             easing.bezierCurve: Appearance.anim.curves.bubblyWidth
             duration: Math.max(root.targetWrapperWidth, root.targetWrapperHeight)
         }
     }
 
-    Behavior on wrapperHeight {
+    Behavior on _rawHeight {
         Anim {
             easing.bezierCurve: Appearance.anim.curves.bubblyHeight
             duration: Math.max(root.targetWrapperWidth, root.targetWrapperHeight)

@@ -28,7 +28,12 @@ Singleton {
             c.hsvValue = Math.max(0, Math.min(1, c.hslLightness + (light ? -0.2 : 0.2))); // TODO: edit based on colours (hue or smth)
         return c;
     }
+    function layer(c: color, layer: var): color {
+            if (!transparency.enabled)
+                return c;
 
+            return layer === 0 ? Qt.alpha(c, transparency.base) : alterColour(c, transparency.layers, layer ?? 1);
+        }
     function on(c: color): color {
         if (c.hslLightness < 0.5)
             return Qt.hsla(c.hslHue, c.hslSaturation, 0.9, 1);

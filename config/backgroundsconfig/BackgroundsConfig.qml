@@ -1,7 +1,7 @@
 import Quickshell.Io
 
 JsonObject {
-    property int rounding: 15
+    property int rounding: 30
     property bool invertBaseRounding: true
     property Directions margins: Directions {}
     property Directions paddings: Directions {

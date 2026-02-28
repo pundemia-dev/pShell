@@ -16,7 +16,7 @@ JsonObject {
     }
     property bool separated: true
     property SeparatedData paddings: SeparatedData {
-        all: 15
+        all: 8
         center: 25
         // begin: 20
     }
@@ -51,6 +51,14 @@ JsonObject {
         // separatorOnEmpty:
     }
 
+    property list<var> beginLayout: [
+        { "type": "widget", "name": "OsIcon" },
+        { "type": "group", "children": [
+            { "type": "widget", "name": "Tray" },
+        ]},
+        { "type": "widget", "name": "Utilities" },
+    ]
+
     property list<var> centerLayout: [
         { "type": "widget", "name": "Clock" },
         { "type": "widget", "name": "Dinamic" },
@@ -67,6 +75,18 @@ JsonObject {
         ]}
     ]
 
+    property list<var> endLayout: [
+        { "type": "group", "children": [
+            { "type": "widget", "name": "KeyboardPreview" },
+        ]},
+        { "type": "widget", "name": "Clock" },
+        { "type": "group", "children": [
+            { "type": "widget", "name": "Bluetooth" },
+            { "type": "widget", "name": "Network" },
+            { "type": "widget", "name": "Power" },
+        ]},
+        { "type": "widget", "name": "OsIcon" },
+    ]
     property bool isEditing: false
     property KbPreviewConfig kbPreview: KbPreviewConfig {}
     property TrayConfig tray: TrayConfig {}

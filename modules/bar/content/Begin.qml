@@ -20,7 +20,7 @@ FlexboxLayout {
     Repeater {
         id: widgetRepeater
         model: ScriptModel {
-            values: Config.bar.centerLayout || []
+            values: Config.bar.beginLayout || []
         }
 
         delegate: WidgetHost {
