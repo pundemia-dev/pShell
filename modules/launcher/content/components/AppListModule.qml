@@ -4,6 +4,7 @@ import qs.config
 import qs.utils
 import qs.components
 import qs.components.controls
+import qs.components.images
 import qs.services
 import Quickshell.Widgets
 import Quickshell
@@ -28,6 +29,21 @@ LauncherModule {
 
     // Текущее выбранное приложение для отображения в правой панели
     property var selectedApp: null
+    property var _pendingApp: null
+
+    Timer {
+        id: debounceTimer
+        interval: 80
+        onTriggered: selectedApp = _pendingApp
+    }
+
+    // В onSelected вместо прямого присвоения:
+    onSelected: function() {
+        if (root.hasRightPanel) {
+            root._pendingApp = app
+            debounceTimer.restart()
+        }
+    }
 
     // Если панель открыли кнопкой, автоматически выбираем первое приложение
     onHasRightPanelChanged: {
@@ -176,6 +192,7 @@ LauncherModule {
     // ==========================================
     // ПРАВАЯ ПАНЕЛЬ (Детали приложения)
     // ==========================================
+    //
     rightPanelComponent: Component {
         Item {
             id: panelRoot
@@ -185,63 +202,41 @@ LauncherModule {
 
             Connections {
                 target: root
-                function onSelectedAppChanged() {
-                    fadeOut.start()
-                }
+                function onSelectedAppChanged() { fadeOut.start() }
             }
 
             SequentialAnimation {
                 id: fadeOut
                 ParallelAnimation {
-                    Anim {
-                        target: content
-                        property: "opacity"
-                        to: 0
-                        duration: Appearance.anim.durations.small
-                    }
-                    Anim {
-                        target: content
-                        property: "scale"
-                        to: 0.97
-                        duration: Appearance.anim.durations.small
-                    }
+                    Anim { target: content; property: "opacity"; to: 0; duration: Appearance.anim.durations.small }
+                    Anim { target: content; property: "scale";   to: 0.97; duration: Appearance.anim.durations.small }
                 }
                 ScriptAction {
-                    script: {
-                        panelRoot.displayedApp = root.selectedApp
-                        fadeIn.start()
-                    }
+                    script: { panelRoot.displayedApp = root.selectedApp; fadeIn.start() }
                 }
             }
 
             ParallelAnimation {
                 id: fadeIn
-                Anim {
-                    target: content
-                    property: "opacity"
-                    to: 1
-                    duration: Appearance.anim.durations.small
-                }
-                Anim {
-                    target: content
-                    property: "scale"
-                    to: 1
-                    duration: Appearance.anim.durations.small
-                }
+                Anim { target: content; property: "opacity"; to: 1; duration: Appearance.anim.durations.small }
+                Anim { target: content; property: "scale";   to: 1; duration: Appearance.anim.durations.small }
             }
 
             ColumnLayout {
                 id: content
                 anchors.centerIn: parent
                 width: parent.width - Appearance.padding.large * 2
-                spacing: 8
+                spacing: 12
                 transformOrigin: Item.Center
 
-                IconImage {
+                // ── Иконка + заголовок ────────────────────────────────────────
+                CachingIconImage {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: 128
                     Layout.preferredHeight: 128
-                    source: panelRoot.displayedApp ? Quickshell.iconPath(panelRoot.displayedApp.icon, "application-x-executable") : ""
+                    source: panelRoot.displayedApp
+                        ? Quickshell.iconPath(panelRoot.displayedApp.icon, "application-x-executable")
+                        : ""
                 }
 
                 StyledText {
@@ -263,95 +258,32 @@ LauncherModule {
                     text: panelRoot.displayedApp?.comment || panelRoot.displayedApp?.genericName || ""
                     font.pointSize: Appearance.font.size.small
                     color: Colours.alpha(Colours.palette.on_surface, 0.5)
+                    visible: text !== ""
                 }
 
-                Item { Layout.preferredHeight: 12 }
-
-                // PIN APP
-                RowLayout {
+                // ── Настройки ─────────────────────────────────────────────────
+                SectionContainer {
                     Layout.fillWidth: true
-                    spacing: 10
 
-                    StyledRect {
-                        Layout.preferredWidth: 32
-                        Layout.preferredHeight: 32
-                        radius: Appearance.rounding.small
-                        color: Colours.alpha(Colours.palette.primary, 0.15)
-                        StyledIcon {
-                            anchors.centerIn: parent
-                            text: "\uec9c"
-                            color: Colours.palette.background
-                            font.pointSize: Appearance.font.size.large
-                        }
-                    }
-
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: "Pin app"
-                        font.pointSize: Appearance.font.size.normal
-                    }
-
-                    StyledRect {
-                        color: Colours.palette.surface_bright
-                        radius: Appearance.rounding.small / 2
-                        implicitWidth: shortcutPin.implicitWidth + Appearance.padding.normal
-                        implicitHeight: shortcutPin.implicitHeight + 6
-                        StyledText {
-                            id: shortcutPin
-                            anchors.centerIn: parent
-                            text: "Ctrl+P"
-                            font.pointSize: Appearance.font.size.small / 1.5
-                            color: Colours.palette.on_surface_variant
-                        }
-                    }
-
-                    StyledSwitch {
+                    SwitchRow {
+                        label: "Pin app"
                         checked: root.isPinned
-                        onClicked: root.togglePin()
-                    }
-                }
-
-                // HIDE APP
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-
-                    StyledRect {
-                        Layout.preferredWidth: 32
-                        Layout.preferredHeight: 32
-                        radius: Appearance.rounding.small
-                        color: Colours.alpha(Colours.palette.error, 0.15)
-                        StyledIcon {
-                            anchors.centerIn: parent
-                            text: "\uecf0"
-                            color: Colours.palette.background
-                            font.pointSize: Appearance.font.size.large
-                        }
+                        onToggled: function() { root.togglePin() }
+                        tooltip: "Ctrl+P"
+                        // implicitHeight: row.implicitHeight + Appearance.padding.normal
+                        icon: root.isPinned ? "\uf68d" : "\uec9c"
+                        color: "transparent"
+                        paddings: 0
                     }
 
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: "Hide app"
-                        font.pointSize: Appearance.font.size.normal
-                    }
-
-                    StyledRect {
-                        color: Colours.palette.surface_bright
-                        radius: Appearance.rounding.small / 2
-                        implicitWidth: shortcutHide.implicitWidth + Appearance.padding.normal
-                        implicitHeight: shortcutHide.implicitHeight + 6
-                        StyledText {
-                            id: shortcutHide
-                            anchors.centerIn: parent
-                            text: "Ctrl+H"
-                            font.pointSize: Appearance.font.size.small / 1.5
-                            color: Colours.palette.on_surface_variant
-                        }
-                    }
-
-                    StyledSwitch {
+                    SwitchRow {
+                        label: "Hide app"
                         checked: root.isHidden
-                        onClicked: root.toggleHide()
+                        onToggled: function() { root.toggleHide() }
+                        tooltip: "Ctrl+H"
+                        icon: root.isHidden ? "\uecf0" : "\uea9a"
+                        color: "transparent"
+                        paddings: 0
                     }
                 }
             }
