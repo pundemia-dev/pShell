@@ -9,6 +9,8 @@ import QtQuick
 Item {
     id: root
 
+    required property bool isHorizontal
+    required property real unitSize
     required property Repeater workspaces
     required property var occupied
     required property int groupOffset
@@ -51,8 +53,8 @@ Item {
 
             required property var modelData
 
-            readonly property Workspace start: root.workspaces.count > 0 ? root.workspaces.itemAt(getWsIdx(modelData.start)) ?? null : null
-            readonly property Workspace end: root.workspaces.count > 0 ? root.workspaces.itemAt(getWsIdx(modelData.end)) ?? null : null
+            readonly property Workspace startWs: root.workspaces.count > 0 ? root.workspaces.itemAt(getWsIdx(modelData.start)) ?? null : null
+            readonly property Workspace endWs: root.workspaces.count > 0 ? root.workspaces.itemAt(getWsIdx(modelData.end)) ?? null : null
 
             function getWsIdx(ws: int): int {
                 let i = ws - 1;
@@ -61,11 +63,25 @@ Item {
                 return i % Config.bar.workspaces.shown;
             }
 
-            anchors.horizontalCenter: root.horizontalCenter
+            // Position on primary axis from start workspace
+            x: root.isHorizontal
+                ? (startWs?.x ?? 0) - 1
+                : 0
+            y: root.isHorizontal
+                ? 0
+                : (startWs?.y ?? 0) - 1
 
-            y: (start?.y ?? 0) - 1
-            implicitWidth: Config.bar.sizes.innerWidth - Appearance.padding.small * 2 + 2
-            implicitHeight: start && end ? end.y + end.size - start.y + 2 : 0
+            // Primary axis: span from start to end workspace
+            // Cross axis: unitSize
+            implicitWidth: root.isHorizontal
+                ? (startWs && endWs ? endWs.x + endWs.size - startWs.x + 2 : 0)
+                : root.unitSize + 2
+            implicitHeight: root.isHorizontal
+                ? root.unitSize + 2
+                : (startWs && endWs ? endWs.y + endWs.size - startWs.y + 2 : 0)
+
+            anchors.verticalCenter: root.isHorizontal ? root.verticalCenter : undefined
+            anchors.horizontalCenter: root.isHorizontal ? undefined : root.horizontalCenter
 
             color: Colours.layer(Colours.palette.surface_container_high, 2)
             radius: Appearance.rounding.full
@@ -74,17 +90,25 @@ Item {
             Component.onCompleted: scale = 1
 
             Behavior on scale {
-                Anim {
+                PillAnim {
                     easing.bezierCurve: Appearance.anim.curves.standardDecel
                 }
             }
 
+            Behavior on x {
+                PillAnim {}
+            }
+
             Behavior on y {
-                Anim {}
+                PillAnim {}
+            }
+
+            Behavior on implicitWidth {
+                PillAnim {}
             }
 
             Behavior on implicitHeight {
-                Anim {}
+                PillAnim {}
             }
         }
     }
@@ -98,5 +122,11 @@ Item {
         id: pillComp
 
         Pill {}
+    }
+
+    component PillAnim: NumberAnimation {
+        duration: Appearance.anim.durations.normal
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Appearance.anim.curves.standard
     }
 }

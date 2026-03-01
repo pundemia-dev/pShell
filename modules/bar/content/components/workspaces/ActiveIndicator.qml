@@ -7,6 +7,8 @@ import QtQuick
 StyledRect {
     id: root
 
+    required property bool isHorizontal
+    required property real unitSize
     required property int activeWsId
     required property Repeater workspaces
     required property Item mask
@@ -18,16 +20,24 @@ StyledRect {
         return i % Config.bar.workspaces.shown;
     }
 
-    property real leading: workspaces.count > 0 ? workspaces.itemAt(currentWsIdx)?.y ?? 0 : 0
-    property real trailing: workspaces.count > 0 ? workspaces.itemAt(currentWsIdx)?.y ?? 0 : 0
-    property real currentSize: workspaces.count > 0 ? workspaces.itemAt(currentWsIdx)?.size ?? 0 : 0
+    // Primary axis position (x for horizontal, y for vertical)
+    property real leading: workspaces.count > 0
+        ? (isHorizontal ? workspaces.itemAt(currentWsIdx)?.x ?? 0 : workspaces.itemAt(currentWsIdx)?.y ?? 0)
+        : 0
+    property real trailing: workspaces.count > 0
+        ? (isHorizontal ? workspaces.itemAt(currentWsIdx)?.x ?? 0 : workspaces.itemAt(currentWsIdx)?.y ?? 0)
+        : 0
+    property real currentSize: workspaces.count > 0
+        ? (isHorizontal ? workspaces.itemAt(currentWsIdx)?.size ?? 0 : workspaces.itemAt(currentWsIdx)?.size ?? 0)
+        : 0
     property real offset: Math.min(leading, trailing)
     property real size: {
         const s = Math.abs(leading - trailing) + currentSize;
         if (Config.bar.workspaces.activeTrail && lastWs > currentWsIdx) {
             const ws = workspaces.itemAt(lastWs);
-            // console.log(ws, lastWs);
-            return ws ? Math.min(ws.y + ws.size - offset, s) : 0;
+            if (!ws) return 0;
+            const wsEnd = isHorizontal ? ws.x + ws.size : ws.y + ws.size;
+            return Math.min(wsEnd - offset, s);
         }
         return s;
     }
@@ -41,9 +51,15 @@ StyledRect {
     }
 
     clip: true
-    y: offset + mask.y
-    implicitWidth: Config.bar.sizes.innerWidth - Appearance.padding.small * 2
-    implicitHeight: size
+
+    // Position on primary axis
+    x: isHorizontal ? offset + mask.x : mask.x
+    y: isHorizontal ? mask.y : offset + mask.y
+
+    // Size: primary axis = animated size, cross axis = unitSize
+    implicitWidth: isHorizontal ? size : unitSize
+    implicitHeight: isHorizontal ? unitSize : size
+
     radius: Appearance.rounding.full
     color: Colours.palette.primary
 
@@ -52,12 +68,13 @@ StyledRect {
         sourceColor: Colours.palette.on_surface
         colorizationColor: Colours.palette.on_primary
 
-        x: 0
-        y: -parent.offset
+        x: root.isHorizontal ? -root.offset : 0
+        y: root.isHorizontal ? 0 : -root.offset
         implicitWidth: root.mask.implicitWidth
         implicitHeight: root.mask.implicitHeight
 
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: root.isHorizontal ? parent.verticalCenter : undefined
+        anchors.horizontalCenter: root.isHorizontal ? undefined : parent.horizontalCenter
     }
 
     Behavior on leading {

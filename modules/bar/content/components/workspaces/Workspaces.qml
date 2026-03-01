@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import qs.services
 import qs.config
 import qs.components
+import qs.components.effects
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -11,8 +12,9 @@ import QtQuick.Effects
 StyledClippingRect {
     id: root
 
-    required property ShellScreen screen
+    property ShellScreen screen
 
+    readonly property bool isHorizontal: Config.bar.orientation
     readonly property bool onSpecial: (Config.bar.workspaces.perMonitorWorkspaces ? Hypr.monitorFor(screen) : Hypr.focusedMonitor)?.lastIpcObject?.specialWorkspace?.name !== ""
     readonly property int activeWsId: Config.bar.workspaces.perMonitorWorkspaces ? (Hypr.monitorFor(screen).activeWorkspace?.id ?? 1) : Hypr.activeWsId
 
@@ -21,16 +23,23 @@ StyledClippingRect {
         return acc;
     }, {})
     readonly property int groupOffset: Math.floor((activeWsId - 1) / Config.bar.workspaces.shown) * Config.bar.workspaces.shown
+    readonly property real unitSize: Config.bar.group.thickness - Appearance.padding.small * 2
 
     property real blur: onSpecial ? 1 : 0
 
-    implicitWidth: Config.bar.sizes.innerWidth
-    implicitHeight: layout.implicitHeight + Appearance.padding.small * 2
+    implicitWidth: isHorizontal
+        ? layout.implicitWidth + Appearance.padding.small * 2
+        : unitSize + Appearance.padding.small * 2
+    implicitHeight: isHorizontal
+        ? unitSize + Appearance.padding.small * 2
+        : layout.implicitHeight + Appearance.padding.small * 2
 
     color: Colours.palette.surface_container
     radius: Appearance.rounding.full
 
     Item {
+        id: normalContent
+
         anchors.fill: parent
         scale: root.onSpecial ? 0.8 : 1
         opacity: root.onSpecial ? 0.5 : 1
@@ -49,17 +58,24 @@ StyledClippingRect {
             anchors.margins: Appearance.padding.small
 
             sourceComponent: OccupiedBg {
+                isHorizontal: root.isHorizontal
+                unitSize: root.unitSize
                 workspaces: workspaces
                 occupied: root.occupied
                 groupOffset: root.groupOffset
             }
         }
 
-        ColumnLayout {
+        FlexboxLayout {
             id: layout
 
             anchors.centerIn: parent
-            spacing: Math.floor(Appearance.spacing.small / 2)
+            direction: root.isHorizontal ? FlexboxLayout.Row : FlexboxLayout.Column
+            alignItems: FlexboxLayout.AlignCenter
+            gap: Math.floor(Appearance.spacing.small / 2)
+
+            layer.enabled: true
+            layer.smooth: true
 
             Repeater {
                 id: workspaces
@@ -67,6 +83,8 @@ StyledClippingRect {
                 model: Config.bar.workspaces.shown
 
                 Workspace {
+                    isHorizontal: root.isHorizontal
+                    unitSize: root.unitSize
                     activeWsId: root.activeWsId
                     occupied: root.occupied
                     groupOffset: root.groupOffset
@@ -75,10 +93,11 @@ StyledClippingRect {
         }
 
         Loader {
-            anchors.horizontalCenter: parent.horizontalCenter
             active: Config.bar.workspaces.activeIndicator
 
             sourceComponent: ActiveIndicator {
+                isHorizontal: root.isHorizontal
+                unitSize: root.unitSize
                 activeWsId: root.activeWsId
                 workspaces: workspaces
                 mask: layout
@@ -87,10 +106,15 @@ StyledClippingRect {
 
         MouseArea {
             anchors.fill: layout
+
             onClicked: event => {
-                const ws = layout.childAt(event.x, event.y).ws;
-                if (Hypr.activeWsId !== ws)
-                    Hypr.dispatch(`workspace ${ws}`);
+                const child = root.isHorizontal
+                    ? layout.childAt(event.x, event.y)
+                    : layout.childAt(event.x, event.y);
+                if (!child || child.ws === undefined)
+                    return;
+                if (Hypr.activeWsId !== child.ws)
+                    Hypr.dispatch(`workspace ${child.ws}`);
                 else
                     Hypr.dispatch("togglespecialworkspace special");
             }
@@ -118,6 +142,8 @@ StyledClippingRect {
 
         sourceComponent: SpecialWorkspaces {
             screen: root.screen
+            isHorizontal: root.isHorizontal
+            unitSize: root.unitSize
         }
 
         Behavior on scale {
@@ -133,5 +159,13 @@ StyledClippingRect {
         Anim {
             duration: Appearance.anim.durations.small
         }
+    }
+
+    Behavior on implicitWidth {
+        Anim {}
+    }
+
+    Behavior on implicitHeight {
+        Anim {}
     }
 }

@@ -311,6 +311,26 @@ Singleton {
             root.osName = nameLine.split("=")[1].replace(/"/g, "");
         }
     }
+    function getSpecialWsIcon(name: string): string {
+        name = name.toLowerCase().slice("special:".length);
+
+        for (const iconConfig of Config.bar.workspaces.specialWorkspaceIcons)
+            if (iconConfig.name === name)
+                return iconConfig.icon;
+
+        if (name === "special")
+            return "\uf698";
+        if (name === "communication")
+            return "\uea56";
+        if (name === "music")
+            return "\uebc1";
+        if (name === "todo")
+            return "\uef76";
+        if (name === "sysmon")
+            return "\uee77";
+        return name[0].toUpperCase();
+    }
+
     function getTrayIcon(id: string, icon: string): string {
         for (const sub of Config.bar.tray.iconSubs)
             if (sub.id === id)
