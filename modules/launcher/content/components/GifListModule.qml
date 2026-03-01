@@ -6,12 +6,12 @@ import qs.components
 import qs.components.controls
 import qs.services
 import Quickshell
-import Quickshell.Io // Для объекта Process
+import Quickshell.Io
 
 LauncherModule {
     id: root
 
-    moduleId: "gif"
+    moduleId: "Gif"
     name: "GIF Search"
     description: "Search and copy GIFs from Giphy"
     trigger: "gif"
@@ -21,14 +21,13 @@ LauncherModule {
     hasRightPanel: false
     customRightWidth: 380
 
-    // Публичный тестовый ключ Giphy (для продакшена лучше зарегистрировать свой на developers.giphy.com)
-    property string apiKey: "" // надо перенести в конфиг
+    readonly property string apiKey: Config.launcher.giphyApiKey ?? ""
 
     property var selectedGif: null
     property var _pendingGif: null
 
     Timer {
-        id: uiDebounceTimer
+        id: debounceTimer
         interval: 80
         onTriggered: selectedGif = _pendingGif
     }
@@ -46,20 +45,32 @@ LauncherModule {
 
     listModel: internalModel
 
+    function onActivated(initialQuery) {
+        hasRightPanel = false
+        selectedGif = null
+        handleInput(initialQuery)
+    }
+
     function handleInput(query) {
+        selectedGif = null
         if (query.trim() === "") {
-            internalModel.values =[]
-            selectedGif = null
-            hasRightPanel = false
+            internalModel.values = []
             networkDebounceTimer.stop()
+            hasRightPanel = false
             return
         }
         networkDebounceTimer.currentQuery = query
         networkDebounceTimer.restart()
     }
 
-    // --- СЕТЕВОЙ ЗАПРОС К GIPHY API ---
     function fetchGifs(query) {
+        if (!apiKey) {
+            console.warn("GifListModule: giphyApiKey is not set in config (launcher.giphyApiKey)")
+            internalModel.values = []
+            hasRightPanel = false
+            return
+        }
+
         let xhr = new XMLHttpRequest()
         let url = `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(query)}&limit=20`
 
@@ -67,76 +78,117 @@ LauncherModule {
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
                 let response = JSON.parse(xhr.responseText)
-                let results = response.data ||[]
+                let results = response.data || []
 
                 let newValues = results.map(gif => {
-                    // Giphy отдает разные размеры.
-                    // original - полноразмерная для копирования и правой панели
-                    // fixed_height_small - легкая превьюшка 100px для левого списка
                     let original = gif.images.original
-                    let thumb = gif.images.fixed_height_small
+                    let preview = gif.images.fixed_height_small
+                    let title = gif.title || "GIF"
+
+                    let gifData = {
+                        url: original.url,
+                        width: original.width,
+                        height: original.height,
+                        title: title
+                    }
 
                     return {
-                        header: gif.title || "GIF Image",
-                        text: "Enter: Copy URL • Alt+Enter: Copy File",
-                        leftIcon: thumb.url, // Прямая ссылка на легкую миниатюру
-                        isLeftIconImage: true,
+                        _gifData: gifData,
+                        header: title,
+                        text: original.width + "×" + original.height,
+                        backgroundImage: preview.url,
                         rightIcon: "\ue14d",
-                        rightText: original.width + "x" + original.height,
-
-                        rawGifData: original,
+                        rightText: "",
 
                         onClicked: function() {
-                            root.copyGifToClipboard(original.url, false)
-                            requestClose(true)
-                        },
-                        onAltClicked: function() {
                             root.copyGifToClipboard(original.url, true)
                             requestClose(true)
                         },
+                        onAltClicked: function() {
+                            root.copyGifToClipboard(original.url, false)
+                            requestClose(true)
+                        },
                         onSelected: function() {
-                            root._pendingGif = original
-                            root.hasRightPanel = true
-                            uiDebounceTimer.restart()
+                            root._pendingGif = gifData
+                            debounceTimer.restart()
                         }
                     }
                 })
+
                 internalModel.values = newValues
+
+                if (newValues.length > 0) {
+                    root.hasRightPanel = true
+                    root.selectedGif = newValues[0]._gifData ?? null
+                } else {
+                    root.hasRightPanel = false
+                }
             }
         }
         xhr.send()
     }
 
-    function copyGifToClipboard(url, copyAsFile) {
-        // Нативный запуск процесса без блокировки UI
+    function copyGifToClipboard(url, asGif) {
         let proc = Qt.createQmlObject('import Quickshell.Io; Process {}', root)
 
-        if (copyAsFile) {
-            proc.command =["sh", "-c", `curl -s "${url}" | wl-copy -t image/gif`]
+        if (asGif) {
+            proc.command = ["sh", "-c",
+                `tmpfile=$(mktemp /tmp/qs-gif-XXXXXX.gif) && ` +
+                `curl -s "${url}" -o "$tmpfile" && ` +
+                `printf 'file://%s\\n' "$tmpfile" | wl-copy -t text/uri-list`
+            ]
         } else {
-            proc.command =["sh", "-c", `printf '%s' "${url}" | wl-copy`]
+            proc.command = ["sh", "-c", `printf '%s' "${url}" | wl-copy`]
         }
 
-        // Удаляем из памяти после завершения
         proc.exited.connect(() => {
-            console.log("[GifModule] Clipboard process exited.")
             proc.destroy()
         })
 
         proc.running = true
     }
 
-    // Обработка прямого Enter
-    function execute(query, isAlt) {
-        if (selectedGif) {
-            copyGifToClipboard(selectedGif.url, isAlt)
-            requestClose(true)
+    // ==========================================
+    // КНОПКА ДЛЯ ROW INPUT
+    // ==========================================
+
+    inputExtensionComponent: Component {
+        StyledRect {
+            implicitWidth: 32
+            implicitHeight: 32
+            radius: Appearance.rounding.small ?? 8
+            color: toggleArea.containsMouse
+                ? Colours.alpha(Colours.palette.on_surface, 0.1)
+                : "transparent"
+
+            StyledIcon {
+                anchors.centerIn: parent
+                text: root.hasRightPanel ? "\ufc3d" : "\ufc3e"
+                font.pointSize: Appearance.font.size.large ?? 16
+                color: root.hasRightPanel
+                    ? Colours.palette.primary
+                    : Colours.palette.on_surface_variant
+            }
+
+            MouseArea {
+                id: toggleArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: {
+                    root.hasRightPanel = !root.hasRightPanel
+                }
+            }
         }
     }
+
+    // ==========================================
+    // ПРАВАЯ ПАНЕЛЬ (Превью GIF)
+    // ==========================================
 
     rightPanelComponent: Component {
         Item {
             id: panelRoot
+
             anchors.fill: parent
 
             property var displayedGif: root.selectedGif
@@ -148,301 +200,181 @@ LauncherModule {
 
             SequentialAnimation {
                 id: fadeOut
-                Anim { target: content; property: "opacity"; to: 0; duration: 100 }
-                ScriptAction { script: { panelRoot.displayedGif = root.selectedGif; fadeIn.start() } }
+
+                ParallelAnimation {
+                    Anim { target: content; property: "opacity"; to: 0; duration: Appearance.anim.durations.small }
+                    Anim { target: content; property: "scale"; to: 0.97; duration: Appearance.anim.durations.small }
+                }
+                ScriptAction {
+                    script: {
+                        panelRoot.displayedGif = root.selectedGif
+                        fadeIn.start()
+                    }
+                }
             }
-            Anim { id: fadeIn; target: content; property: "opacity"; to: 1; duration: 150 }
+
+            ParallelAnimation {
+                id: fadeIn
+
+                Anim { target: content; property: "opacity"; to: 1; duration: Appearance.anim.durations.small }
+                Anim { target: content; property: "scale"; to: 1; duration: Appearance.anim.durations.small }
+            }
 
             ColumnLayout {
                 id: content
-                anchors.fill: parent
-                anchors.margins: Appearance.padding.large
-                spacing: 12
 
-                StyledRect {
+                anchors.centerIn: parent
+                width: parent.width - Appearance.padding.large * 2
+                spacing: Appearance.spacing.normal
+                transformOrigin: Item.Center
+
+                // ── Превью GIF ────────────────────────────────────────────────
+                Item {
+                    id: gifContainer
+
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    radius: Appearance.rounding.normal
-                    color: Colours.alpha(Colours.palette.surface_variant, 0.3)
-                    clip: true
+                    Layout.preferredHeight: width * 0.75
 
-                    CircularIndicator {
+                    // Вычисляем вписанные размеры гифки в контейнер 4:3
+                    readonly property real gifNativeW: (panelRoot.displayedGif?.width ?? 0) > 0
+                        ? panelRoot.displayedGif.width : 4
+                    readonly property real gifNativeH: (panelRoot.displayedGif?.height ?? 0) > 0
+                        ? panelRoot.displayedGif.height : 3
+                    readonly property real gifAspect: gifNativeW / gifNativeH
+                    readonly property real containerAspect: width / height
+
+                    readonly property real fittedWidth: gifAspect >= containerAspect
+                        ? width
+                        : height * gifAspect
+                    readonly property real fittedHeight: gifAspect >= containerAspect
+                        ? width / gifAspect
+                        : height
+
+                    // Подложка — ровно под гифкой, те же скругления
+                    StyledRect {
                         anchors.centerIn: parent
-                        running: gifPlayer.status === AnimatedImage.Loading
-                        visible: running
+                        width: gifContainer.fittedWidth
+                        height: gifContainer.fittedHeight
+                        radius: Appearance.rounding.normal
+                        color: Colours.alpha(Colours.palette.surface_variant, 0.4)
+                        visible: gifPlayer.status === AnimatedImage.Ready
+                            || gifPlayer.status === AnimatedImage.Loading
                     }
 
-                    AnimatedImage {
-                        id: gifPlayer
-                        anchors.fill: parent
-                        anchors.margins: 4
-                        fillMode: Image.PreserveAspectFit
-                        source: panelRoot.displayedGif ? panelRoot.displayedGif.url : ""
-                        playing: status === AnimatedImage.Ready
-                        asynchronous: true
+                    // Индикатор загрузки
+                    Loader {
+                        active: gifPlayer.status !== AnimatedImage.Ready
+                            && gifPlayer.status !== AnimatedImage.Error
+                        anchors.centerIn: parent
+                        z: 2
+                        sourceComponent: CircularIndicator {}
+                        onLoaded: item.running = true
+                    }
+
+                    // GIF со скруглёнными углами через ClippingRectangle
+                    StyledClippingRect {
+                        anchors.centerIn: parent
+                        width: gifContainer.fittedWidth
+                        height: gifContainer.fittedHeight
+                        radius: Appearance.rounding.normal
+                        color: "transparent"
+                        z: 1
+
+                        AnimatedImage {
+                            id: gifPlayer
+
+                            anchors.fill: parent
+                            // Контейнер уже имеет правильный aspect ratio → Stretch без артефактов
+                            fillMode: Image.Stretch
+                            source: panelRoot.displayedGif ? panelRoot.displayedGif.url : ""
+                            playing: status === AnimatedImage.Ready
+                            asynchronous: true
+                        }
                     }
                 }
 
-                SectionContainer {
-                    Layout.fillWidth: true
+                // ── Название + размер с тултипом ──────────────────────────────
+                Item {
+                    id: infoBlock
 
-                    PropertyRow {
-                        label: "Direct Link"
-                        value: "Press Enter to copy"
+                    Layout.fillWidth: true
+                    implicitHeight: infoColumn.implicitHeight
+
+                    property bool hovered: infoHover.hovered
+
+                    HoverHandler {
+                        id: infoHover
                     }
-                    PropertyRow {
-                        label: "Image File"
-                        value: "Press Alt+Enter to copy"
-                        showTopMargin: true
+
+                    ColumnLayout {
+                        id: infoColumn
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        spacing: Appearance.spacing.small
+
+                        StyledText {
+                            id: titleText
+
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 2
+                            text: panelRoot.displayedGif?.title ?? ""
+                            font.pointSize: Appearance.font.size.large
+                            font.weight: Font.DemiBold
+                            color: Colours.palette.primary
+                            elide: Text.ElideRight
+                        }
+
+                        StyledText {
+                            id: sizeText
+
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            text: panelRoot.displayedGif
+                                ? panelRoot.displayedGif.width + "×" + panelRoot.displayedGif.height
+                                : ""
+                            font.pointSize: Appearance.font.size.small
+                            color: Colours.alpha(Colours.palette.on_surface, 0.5)
+                            visible: text !== ""
+                        }
+                    }
+
+                    Loader {
+                        active: true
+                        z: 10000
+                        width: 0
+                        height: 0
+                        sourceComponent: Tooltip {
+                            target: infoBlock
+                            text: "Alt+Enter — Copy link URL"
+                        }
+                    }
+                }
+
+                // ── Подсказка по шорткату Alt+Enter ──────────────────────────
+                Item {
+                    id: shortcutHint
+
+                    Layout.alignment: Qt.AlignHCenter
+                    implicitWidth: hintRow.implicitWidth
+                    implicitHeight: hintRow.implicitHeight
+
+                    // Tooltip на подсказку шортката
+                    Loader {
+                        active: true
+                        z: 10000
+                        width: 0
+                        height: 0
+                        sourceComponent: Tooltip {
+                            target: shortcutHint
+                            text: "Copy link URL"
+                        }
                     }
                 }
             }
         }
     }
 }
-
-// import QtQuick
-// import QtQuick.Layouts
-// import qs.config
-// import qs.utils
-// import qs.components
-// import qs.components.controls
-// import qs.services
-// import Quickshell
-// import Quickshell.Io // Для объекта Process
-
-// LauncherModule {
-//     id: root
-
-//     moduleId: "gif"
-//     name: "GIF Search"
-//     description: "Search and copy GIFs from Tenor"
-//     trigger: "gif"
-//     icon: "🎞️"
-
-//     hasLeftPanel: true
-//     hasRightPanel: false
-//     customRightWidth: 380
-
-//     // Тестовый ключ Tenor V2
-//     property string apiKey: "LIVDSRZULELA"
-
-//     property var selectedGif: null
-//     property var _pendingGif: null
-
-//     Timer {
-//         id: uiDebounceTimer
-//         interval: 80
-//         onTriggered: selectedGif = _pendingGif
-//     }
-
-//     Timer {
-//         id: networkDebounceTimer
-//         interval: 500
-//         property string currentQuery: ""
-//         onTriggered: root.fetchGifs(currentQuery)
-//     }
-
-//     ScriptModel {
-//         id: internalModel
-//     }
-
-//     listModel: internalModel
-
-//     function onActivated(initialQuery) {
-//         handleInput(initialQuery ?? "")
-//     }
-
-//     function handleInput(query) {
-//         console.log("[GifModule] handleInput:", query)
-//         if (query.trim() === "") {
-//             internalModel.values =[]
-//             selectedGif = null
-//             hasRightPanel = false
-//             networkDebounceTimer.stop()
-//             return
-//         }
-//         networkDebounceTimer.currentQuery = query
-//         networkDebounceTimer.restart()
-//     }
-
-//     function fetchGifs(query) {
-//         let xhr = new XMLHttpRequest()
-//         let url = `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${apiKey}&limit=20`
-
-//         xhr.open("GET", url)
-//         // xhr.onreadystatechange = function() {
-//         //     if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-//         //         let response = JSON.parse(xhr.responseText)
-//         //         let results = response.results ||[]
-
-//         //         let newValues = results.map(gif => {
-//         //             let media = gif.media_formats.gif
-//         //             // Используем nanogif или tinygif для легкой миниатюры в левом списке
-//         //             let thumb = gif.media_formats.nanogif || gif.media_formats.tinygif || media
-
-//         //             return {
-//         //                 header: gif.content_description || "GIF Image",
-//         //                 text: "Enter: Copy URL • Alt+Enter: Copy File",
-//         //                 leftIcon: thumb.url, // Прямая ссылка на миниатюру
-//         //                 isLeftIconImage: true,
-//         //                 rightIcon: "\ue14d",
-//         //                 rightText: media.dims[0] + "x" + media.dims[1],
-
-//         //                 rawGifData: media,
-
-//         //                 onClicked: function() {
-//         //                     root.copyGifToClipboard(media.url, false)
-//         //                     requestClose(true)
-//         //                 },
-//         //                 onAltClicked: function() {
-//         //                     root.copyGifToClipboard(media.url, true)
-//         //                     requestClose(true)
-//         //                 },
-//         //                 onSelected: function() {
-//         //                     root._pendingGif = media
-//         //                     root.hasRightPanel = true
-//         //                     uiDebounceTimer.restart()
-//         //                 }
-//         //             }
-//         //         })
-//         //         internalModel.values = newValues
-//         //     }
-//         // }
-//         xhr.onreadystatechange = function() {
-//             if (xhr.readyState === XMLHttpRequest.DONE) {
-//                 console.log("[GifModule] status:", xhr.status)
-//                 if (xhr.status === 200) {
-//                     let response = JSON.parse(xhr.responseText)
-//                     let results = response.results || []
-
-//                     let newValues = results.map(gif => {
-//                         let media = gif.media_formats.gif
-//                         let thumb = gif.media_formats.nanogif || gif.media_formats.tinygif || media
-
-//                         return {
-//                             header: gif.content_description || "GIF Image",
-//                             text: "Enter: Copy URL • Alt+Enter: Copy File",
-//                             leftIcon: thumb.url,
-//                             isLeftIconImage: true,
-//                             rightIcon: "\ue14d",
-//                             rightText: media.dims[0] + "x" + media.dims[1],
-//                             rawGifData: media,
-//                             onClicked: function() {
-//                                 root.copyGifToClipboard(media.url, false)
-//                                 requestClose(true)
-//                             },
-//                             onAltClicked: function() {
-//                                 root.copyGifToClipboard(media.url, true)
-//                                 requestClose(true)
-//                             },
-//                             onSelected: function() {
-//                                 root._pendingGif = media
-//                                 root.hasRightPanel = true
-//                                 uiDebounceTimer.restart()
-//                             }
-//                         }
-//                     })
-//                     internalModel.values = newValues
-//                 } else {
-//                     console.log("[GifModule] error:", xhr.responseText)
-//                 }
-//             }
-//         }
-//         xhr.send()
-//     }
-
-//     function copyGifToClipboard(url, copyAsFile) {
-//         // Динамически создаем объект Process (чтобы не блокировать UI)
-//         let proc = Qt.createQmlObject('import Quickshell.Io; Process {}', root)
-
-//         if (copyAsFile) {
-//             proc.command =["sh", "-c", `curl -s "${url}" | wl-copy -t image/gif`]
-//         } else {
-//             proc.command = ["sh", "-c", `printf '%s' "${url}" | wl-copy`]
-//         }
-
-//         // Автоматически удаляем объект из памяти после завершения команды
-//         proc.exited.connect(() => {
-//             console.log("[GifModule] Clipboard process exited.")
-//             proc.destroy()
-//         })
-
-//         proc.running = true
-//     }
-
-//     // Обработка прямого Enter из строки ввода
-//     function execute(query, isAlt) {
-//         if (selectedGif) {
-//             copyGifToClipboard(selectedGif.url, isAlt)
-//             requestClose(true)
-//         }
-//     }
-
-//     rightPanelComponent: Component {
-//         Item {
-//             id: panelRoot
-//             anchors.fill: parent
-
-//             property var displayedGif: root.selectedGif
-
-//             Connections {
-//                 target: root
-//                 function onSelectedGifChanged() { fadeOut.start() }
-//             }
-
-//             SequentialAnimation {
-//                 id: fadeOut
-//                 Anim { target: content; property: "opacity"; to: 0; duration: 100 }
-//                 ScriptAction { script: { panelRoot.displayedGif = root.selectedGif; fadeIn.start() } }
-//             }
-//             Anim { id: fadeIn; target: content; property: "opacity"; to: 1; duration: 150 }
-
-//             ColumnLayout {
-//                 id: content
-//                 anchors.fill: parent
-//                 anchors.margins: Appearance.padding.large
-//                 spacing: 12
-
-//                 StyledRect {
-//                     Layout.fillWidth: true
-//                     Layout.fillHeight: true
-//                     radius: Appearance.rounding.normal
-//                     color: Colours.alpha(Colours.palette.surface_variant, 0.3)
-//                     clip: true
-
-//                     CircularIndicator {
-//                         anchors.centerIn: parent
-//                         running: gifPlayer.status === AnimatedImage.Loading
-//                         visible: running
-//                     }
-
-//                     // Стандартный QML плеер для воспроизведения GIF из сети
-//                     AnimatedImage {
-//                         id: gifPlayer
-//                         anchors.fill: parent
-//                         anchors.margins: 4
-//                         fillMode: Image.PreserveAspectFit
-//                         source: panelRoot.displayedGif ? panelRoot.displayedGif.url : ""
-//                         playing: status === AnimatedImage.Ready
-//                         asynchronous: true
-//                     }
-//                 }
-
-//                 SectionContainer {
-//                     Layout.fillWidth: true
-
-//                     PropertyRow {
-//                         label: "Direct Link"
-//                         value: "Press Enter to copy"
-//                     }
-//                     PropertyRow {
-//                         label: "Image File"
-//                         value: "Press Alt+Enter to copy"
-//                         showTopMargin: true
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }

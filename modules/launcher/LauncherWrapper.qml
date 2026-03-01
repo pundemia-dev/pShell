@@ -7,6 +7,7 @@ import Quickshell
 import QtQuick
 import qs.components
 import QtQuick.Layouts
+import qs.components.controls
 import qs.components.images
 import "content"
 
@@ -164,6 +165,7 @@ Item {
                     //     // Ширина тянется за всем контентом
                     //     implicitWidth: flexLayout.contentWidth
                     // }
+
                     RowInput {
                         id: rowInput
                         moduleManager: moduleManager

@@ -7,6 +7,7 @@ import "structures"
 JsonObject {
     // property bool direction: false
     property int gap: 10
+    property string giphyApiKey: ""
     // property int rounding: 10
     property int invertBaseRounding: 10
     property bool excludeBareArea: true
