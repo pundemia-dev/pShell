@@ -98,7 +98,15 @@ Item {
     // ==========================================
     // 5. ЛОГИКА ОБРАБОТКИ ВВОДА
     // ==========================================
+    function cancelEscape() {
+        if (isEscapePending) {
+            isEscapePending = false
+            bsTimer.stop()
+        }
+    }
+
     function processInput(text) {
+        cancelEscape()
         if (currentState === stateActive) {
             if (activeModule) activeModule.handleInput(text)
             return
@@ -201,5 +209,30 @@ Item {
             })
             selectingResults.push(mod)
         }
+    }
+    // ── Escape pending (для пилюли) ───────────────────────────────────────
+    property bool isEscapePending: false
+
+    Timer {
+        id: bsTimer
+        interval: 400
+        onTriggered: root.isEscapePending = false
+    }
+
+    function handleBackspaceOnEmpty() {
+        if (currentState === stateActive) {
+            if (isEscapePending) {
+                bsTimer.stop()
+                isEscapePending = false
+                return escapeCurrentState()
+            } else {
+                isEscapePending = true
+                bsTimer.restart()
+                return null
+            }
+        } else if (currentState === stateSelecting) {
+            return escapeCurrentState()
+        }
+        return null
     }
 }

@@ -7,6 +7,7 @@ import Quickshell
 import QtQuick
 import qs.components
 import QtQuick.Layouts
+import qs.components.images
 import "content"
 
 Item {
@@ -129,9 +130,6 @@ Item {
 
                     // --- КОНСТАНТЫ ---
                     property real defaultTotalWidth: 700
-                    property real itemHeight: Config.launcher.sizes?.itemHeight ?? 40
-                    property int listSpacing: 4
-                    property int maxItems: 7
 
                     // --- ПАНЕЛИ ---
                     property bool hasLeftPanel: moduleManager.currentState === moduleManager.stateSelecting ? true : (moduleManager.activeModule?.hasLeftPanel ?? true)
@@ -146,76 +144,97 @@ Item {
                                                     ? moduleManager.activeModule.customRightWidth
                                                     : 300
 
-                    property real activeLeftWidth: totalWidth - (hasRightPanel ? activeRightWidth + gap : 0)
+                    // property real activeLeftWidth: totalWidth - (hasRightPanel ? activeRightWidth + gap : 0)
 
                     // --- ВЫСОТЫ ---
-                    // Убери realItemHeight и leftPanelHeight, замени на:
-                    property real leftPanelHeight: leftPanel.implicitListHeight
+                    // property real leftPanelHeight: leftPanel.implicitListHeight
                     property real activeRightHeight: moduleManager.activeModule?.customRightHeight > 0
                                                      ? moduleManager.activeModule.customRightHeight
                                                      : 400
 
                     // --- ИТОГОВЫЕ РАЗМЕРЫ ---
                     property real contentWidth: totalWidth
-                    property real contentHeight: hasRightPanel ? activeRightHeight : leftPanelHeight
-                    // --- ПЛАВНЫЕ АНИМАЦИИ (МОРФИНГ) ---
-                    // Делаем так, чтобы лаунчер плавно менял размер при переключении модулей
-                    // Behavior on contentWidth { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-                    // Behavior on contentHeight { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-
+                    property real contentHeight: hasRightPanel ? activeRightHeight : leftPanel.implicitListHeight
                     // --- 1. ROW INPUT (Поле ввода) ---
-                    // ... внутри FlexboxLayout ...
+                    // RowInput {
+                    //     id: rowInput
+                    //     moduleManager: moduleManager // или как у тебя называется ID менеджера
+                    //     targetList: leftPanel.listView // Передаем ссылку на ListView внутри LeftPanel
 
+                    //     // Ширина тянется за всем контентом
+                    //     implicitWidth: flexLayout.contentWidth
+                    // }
                     RowInput {
                         id: rowInput
-                        // Обязательно передаем ссылки:
-                        moduleManager: moduleManager // или как у тебя называется ID менеджера
-                        targetList: leftPanel.listView // Передаем ссылку на ListView внутри LeftPanel
-
-                        // Ширина тянется за всем контентом
+                        moduleManager: moduleManager
                         implicitWidth: flexLayout.contentWidth
 
-
-                        // Connections {
-                        //     target: root
-                        //     function onLauncherVisibleChanged() {
-                        //         if (root.launcherVisible) {
-                        //             rowInput.clear()
-                        //             console.log("[launcher] row-input clearing")
-                        //         }
+                        onMoveUp:   leftPanel.listView.decrementCurrentIndex()
+                        onMoveDown: leftPanel.listView.incrementCurrentIndex()
+                        onExecute: (query, isAlt) => {
+                            // В режиме выбора модуля — Enter активирует модуль из списка
+                            if (moduleManager.currentState === moduleManager.stateSelecting) {
+                                moduleManager.activateBySelectingIndex(leftPanel.listView.currentIndex)
+                                return
+                            }
+                            // Если есть левая панель — триггерим элемент списка
+                            if (flexLayout.hasLeftPanel && leftPanel.listView.currentItem) {
+                                let item = leftPanel.listView.currentItem
+                                if (isAlt) {
+                                    if (typeof item.triggerAlt === "function") item.triggerAlt()
+                                } else {
+                                    if (typeof item.trigger === "function") item.trigger()
+                                }
+                            }
+                            // Иначе — отдаём модулю напрямую
+                            else if (moduleManager.activeModule) {
+                                if (typeof moduleManager.activeModule.execute === "function")
+                                    moduleManager.activeModule.execute(query, isAlt)
+                            }
+                        }
+                        // onExecute: (isAlt) => {
+                        //     let item = leftPanel.listView.currentItem
+                        //     if (!item) return
+                        //     if (isAlt) {
+                        //         if (typeof item.triggerAlt === "function") item.triggerAlt()
+                        //     } else {
+                        //         if (typeof item.trigger === "function") item.trigger()
                         //     }
                         // }
-                    }
 
-                    Item {
-                        id: contentContainer
-                        implicitWidth: flexLayout.contentWidth
-                        implicitHeight: flexLayout.contentHeight
+                        Connections {
+                            target: root
+                            function onLauncherVisibleChanged() {
+                                if (root.launcherVisible) rowInput.clear()
+                            }
+                        }
+                    }
+                    RowLayout {
+                        id: contentRow
+                        spacing: flexLayout.gap
+                        // Ширина всего ряда = totalWidth, высота = contentHeight
+                        // implicitWidth: flexLayout.contentWidth
+                        // implicitHeight: flexLayout.contentHeight
+                        Layout.preferredWidth: flexLayout.contentWidth
+                        Layout.preferredHeight: flexLayout.contentHeight
                         // clip: true
 
                         LeftPanel {
                             id: leftPanel
                             visible: flexLayout.hasLeftPanel
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            width: flexLayout.activeLeftWidth
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
 
                             rightViewWidth: flexLayout.hasRightPanel ? flexLayout.activeRightWidth : 0
 
                             model: moduleManager.currentState === moduleManager.stateSelecting
                                    ? moduleManager.selectingModel
                                    : moduleManager.activeModule?.listModel
-                            onModelChanged: console.log("[LeftPanel] model:", model, "count:", model?.count)
 
                             delegate: UniversalDelegate {
                                 width: leftPanel.width
                                 list: leftPanel
                             }
-                                            Behavior on width {
-                                                    Anim { duration: Appearance.anim.durations.normal; easing.type: Easing.OutCubic }
-                                                }
-
 
                             Connections {
                                 target: leftPanel.model
@@ -227,7 +246,7 @@ Item {
                                 target: leftPanel.listView
                                 function onCurrentIndexChanged() {
                                     let idx = leftPanel.listView.currentIndex
-                                    if (idx >= 0 && moduleManager.activeModule?.hasRightPanel) {
+                                    if (idx >= 0) {// && moduleManager.activeModule?.hasRightPanel) {
                                         let item = moduleManager.activeModule?.listModel?.values?.[idx]
                                         if (typeof item?.onSelected === "function") item.onSelected()
                                     }
@@ -237,45 +256,34 @@ Item {
 
                         RightPanel {
                             id: rightPanel
-                            opacity: flexLayout.hasRightPanel ? 1.0 : 0.0
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            width: flexLayout.hasRightPanel ? flexLayout.activeRightWidth : 0
+                            Layout.preferredWidth: flexLayout.hasRightPanel ? flexLayout.activeRightWidth : 0
+                            Layout.fillHeight: true
+                            visible: flexLayout.hasRightPanel || width > 0
+                            clip: true
 
-                            Loader {
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                sourceComponent: moduleManager.currentState !== moduleManager.stateSelecting
-                                                 ? moduleManager.activeModule?.rightPanelComponent
-                                                 : null
-                            }
-                            Behavior on width {
+                            Behavior on Layout.preferredWidth {
                                 Anim { duration: Appearance.anim.durations.normal; easing.type: Easing.OutCubic }
                             }
-                            Behavior on opacity {
-                                Anim { duration: Appearance.anim.durations.small }
+
+                            Loader {
+                                id: rightLoader
+                                anchors.fill: parent
+                                anchors.margins: 10
+                                asynchronous: true
+                                active: flexLayout.hasRightPanel &&
+                                        moduleManager.currentState !== moduleManager.stateSelecting
+                                sourceComponent: moduleManager.activeModule?.rightPanelComponent ?? null
+
+                                opacity: status === Loader.Ready ? 1.0 : 0.0
+                                Behavior on opacity {
+                                    Anim { duration: Appearance.anim.durations.small }
+                                }
                             }
                         }
                     }
+
                 }
     }
-
-    // onLauncherVisibleChanged: {
-    //     // onLauncherVisibleChanged: {
-    //     //     if (launcherVisible) {
-    //     //         rowInput.clear()
-    //     //         moduleManager.activeModule?.onActivated("")
-    //     //         moduleManager.processInput("")
-    //     //     }
-    //     // }
-    //         if (launcherVisible) {
-    //             rowInput.clear();
-    //             FocusManager.requestFocus("launcher");
-    //         } else {
-    //             FocusManager.releaseFocus("launcher");
-    //         }
-    //     }
 
     Loader {
         id: launcherLoader

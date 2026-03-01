@@ -11,7 +11,7 @@ JsonObject {
     property int invertBaseRounding: 10
     property bool excludeBareArea: true
     property bool reusability: false
-    property var modules: ["AppListModule"]
+    property var modules: ["AppListModule", "GifListModule"]
     property int itemHeight: 50      // высота одного элемента делегата
         property int maxShown: 7         // максимум видимых элементов
         property string magicSymbol: "!" // символ вызова модулей

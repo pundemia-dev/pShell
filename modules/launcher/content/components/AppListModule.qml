@@ -5,6 +5,7 @@ import qs.utils
 import qs.components
 import qs.components.controls
 import qs.components.images
+// import qs.components.images
 import qs.services
 import Quickshell.Widgets
 import Quickshell
@@ -14,7 +15,7 @@ import Quickshell
 LauncherModule {
     id: root
 
-    moduleId: "app_list"
+    moduleId: "Apps"
     name: "Applications"
     description: "Search and launch applications"
     icon: "💻"
@@ -38,12 +39,6 @@ LauncherModule {
     }
 
     // В onSelected вместо прямого присвоения:
-    onSelected: function() {
-        if (root.hasRightPanel) {
-            root._pendingApp = app
-            debounceTimer.restart()
-        }
-    }
 
     // Если панель открыли кнопкой, автоматически выбираем первое приложение
     onHasRightPanelChanged: {
@@ -111,7 +106,7 @@ LauncherModule {
             text: app.comment || app.genericName || "",
             leftIcon: app.icon ?? "",
             isLeftIconImage: true,
-            rightIcon: "\ue895",
+            rightIcon: "\uea61",
             rightText: "",
             onClicked: function() {
                 Apps.launch(app)
@@ -127,8 +122,15 @@ LauncherModule {
                 }
             },
             onSelected: function() {
-                if (root.hasRightPanel) root.selectedApp = app
+                if (root.hasRightPanel) {
+                    root._pendingApp = app
+                    debounceTimer.restart()
+                }
             }
+
+            // onSelected: function() {
+            //     if (root.hasRightPanel) root.selectedApp = app
+            // }
         }))
     }
 
@@ -231,6 +233,8 @@ LauncherModule {
 
                 // ── Иконка + заголовок ────────────────────────────────────────
                 CachingIconImage {
+                // IconImage {
+                    // asynchronous: true
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: 128
                     Layout.preferredHeight: 128
@@ -270,7 +274,6 @@ LauncherModule {
                         checked: root.isPinned
                         onToggled: function() { root.togglePin() }
                         tooltip: "Ctrl+P"
-                        // implicitHeight: row.implicitHeight + Appearance.padding.normal
                         icon: root.isPinned ? "\uf68d" : "\uec9c"
                         color: "transparent"
                         paddings: 0

@@ -14,7 +14,7 @@ Item {
     readonly property alias expandIcon: expandIcon
 
     readonly property int padding: Config.bar.tray.background ? Appearance.padding.normal : Appearance.padding.small
-    readonly property int itemSpacing: Config.bar.tray.background ? Appearance.spacing.small : 0
+    readonly property int itemSpacing: parent.parent.gap
     readonly property int itemSize: Appearance.font.size.small * 2
     readonly property bool isHorizontal: Config.bar.orientation
 
