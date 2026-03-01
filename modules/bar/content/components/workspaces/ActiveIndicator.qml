@@ -13,6 +13,15 @@ StyledRect {
     required property Repeater workspaces
     required property Item mask
 
+    readonly property var cfg: Config.bar.workspaces.active
+    readonly property bool isSlider: cfg.show === "slider"
+    readonly property bool isTeleport: cfg.show === "teleport"
+
+    // Resolved cross-axis size from config or auto
+    readonly property real crossSize: cfg.width >= 0 && cfg.height >= 0
+        ? (isHorizontal ? cfg.height : cfg.width)
+        : unitSize
+
     readonly property int currentWsIdx: {
         let i = activeWsId - 1;
         while (i < 0)
@@ -28,18 +37,24 @@ StyledRect {
         ? (isHorizontal ? workspaces.itemAt(currentWsIdx)?.x ?? 0 : workspaces.itemAt(currentWsIdx)?.y ?? 0)
         : 0
     property real currentSize: workspaces.count > 0
-        ? (isHorizontal ? workspaces.itemAt(currentWsIdx)?.size ?? 0 : workspaces.itemAt(currentWsIdx)?.size ?? 0)
+        ? (workspaces.itemAt(currentWsIdx)?.size ?? 0)
         : 0
     property real offset: Math.min(leading, trailing)
     property real size: {
         const s = Math.abs(leading - trailing) + currentSize;
-        if (Config.bar.workspaces.activeTrail && lastWs > currentWsIdx) {
+        if (cfg.trail && isSlider && lastWs > currentWsIdx) {
             const ws = workspaces.itemAt(lastWs);
             if (!ws) return 0;
             const wsEnd = isHorizontal ? ws.x + ws.size : ws.y + ws.size;
             return Math.min(wsEnd - offset, s);
         }
         return s;
+    }
+
+    // Resolved main-axis size from config or auto
+    readonly property real mainSize: {
+        const cfgSize = isHorizontal ? cfg.width : cfg.height;
+        return cfgSize >= 0 ? cfgSize : size;
     }
 
     property int cWs
@@ -53,23 +68,23 @@ StyledRect {
     clip: true
 
     // Position on primary axis
-    x: isHorizontal ? offset + mask.x : mask.x
-    y: isHorizontal ? mask.y : offset + mask.y
+    x: isHorizontal ? offset + mask.x : mask.x + (mask.implicitWidth - crossSize) / 2
+    y: isHorizontal ? mask.y + (mask.implicitHeight - crossSize) / 2 : offset + mask.y
 
-    // Size: primary axis = animated size, cross axis = unitSize
-    implicitWidth: isHorizontal ? size : unitSize
-    implicitHeight: isHorizontal ? unitSize : size
+    // Size: primary axis = animated size, cross axis from config or unitSize
+    implicitWidth: isHorizontal ? mainSize : crossSize
+    implicitHeight: isHorizontal ? crossSize : mainSize
 
-    radius: Appearance.rounding.full
-    color: Colours.palette.primary
+    radius: cfg.rounding >= 0 ? cfg.rounding : Appearance.rounding.full
+    color: cfg.bg || Colours.palette.primary
 
     Colouriser {
         source: root.mask
         sourceColor: Colours.palette.on_surface
-        colorizationColor: Colours.palette.on_primary
+        colorizationColor: root.cfg.labelColor || Colours.palette.on_primary
 
-        x: root.isHorizontal ? -root.offset : 0
-        y: root.isHorizontal ? 0 : -root.offset
+        x: root.isHorizontal ? -root.offset : (root.mask.implicitWidth - root.crossSize) / -2
+        y: root.isHorizontal ? (root.mask.implicitHeight - root.crossSize) / -2 : -root.offset
         implicitWidth: root.mask.implicitWidth
         implicitHeight: root.mask.implicitHeight
 
@@ -78,13 +93,13 @@ StyledRect {
     }
 
     Behavior on leading {
-        enabled: Config.bar.workspaces.activeTrail
+        enabled: root.cfg.trail && root.isSlider
 
         EAnim {}
     }
 
     Behavior on trailing {
-        enabled: Config.bar.workspaces.activeTrail
+        enabled: root.cfg.trail && root.isSlider
 
         EAnim {
             duration: Appearance.anim.durations.normal * 2
@@ -92,19 +107,19 @@ StyledRect {
     }
 
     Behavior on currentSize {
-        enabled: Config.bar.workspaces.activeTrail
+        enabled: root.cfg.trail && root.isSlider
 
         EAnim {}
     }
 
     Behavior on offset {
-        enabled: !Config.bar.workspaces.activeTrail
+        enabled: !root.isTeleport && !(root.cfg.trail && root.isSlider)
 
         EAnim {}
     }
 
     Behavior on size {
-        enabled: !Config.bar.workspaces.activeTrail
+        enabled: !root.isTeleport && !(root.cfg.trail && root.isSlider)
 
         EAnim {}
     }

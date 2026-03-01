@@ -17,7 +17,7 @@ JsonObject {
     property bool separated: true
     property SeparatedData paddings: SeparatedData {
         all: 8
-        center: 25
+        center: 10
         // begin: 20
     }
     property SeparatedData rounding: SeparatedData {

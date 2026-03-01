@@ -24,18 +24,25 @@ StyledClippingRect {
     }, {})
     readonly property int groupOffset: Math.floor((activeWsId - 1) / Config.bar.workspaces.shown) * Config.bar.workspaces.shown
     readonly property real unitSize: Config.bar.group.thickness - Appearance.padding.small * 2
+    readonly property real wsSpacing: Config.bar.workspaces.spacing >= 0
+        ? Config.bar.workspaces.spacing
+        : Math.floor(Appearance.spacing.small / 2)
+
+    // Deterministic main-axis size: doesn't depend on layout engine timing
+    readonly property real totalMainSize: Config.bar.workspaces.shown * unitSize
+        + Math.max(0, Config.bar.workspaces.shown - 1) * wsSpacing
 
     property real blur: onSpecial ? 1 : 0
 
     implicitWidth: isHorizontal
-        ? layout.implicitWidth + Appearance.padding.small * 2
+        ? Math.max(layout.childrenRect.width, totalMainSize) + Appearance.padding.small * 2
         : unitSize + Appearance.padding.small * 2
     implicitHeight: isHorizontal
         ? unitSize + Appearance.padding.small * 2
-        : layout.implicitHeight + Appearance.padding.small * 2
+        : Math.max(layout.childrenRect.height, totalMainSize) + Appearance.padding.small * 2
 
     color: Colours.palette.surface_container
-    radius: Appearance.rounding.full
+    radius: Config.bar.workspaces.rounding >= 0 ? Config.bar.workspaces.rounding : Appearance.rounding.full
 
     Item {
         id: normalContent
@@ -52,7 +59,7 @@ StyledClippingRect {
         }
 
         Loader {
-            active: Config.bar.workspaces.occupiedBg
+            active: Config.bar.workspaces.occupied.show !== ""
 
             anchors.fill: parent
             anchors.margins: Appearance.padding.small
@@ -69,13 +76,13 @@ StyledClippingRect {
         FlexboxLayout {
             id: layout
 
-            anchors.centerIn: parent
+            x: (parent.width - layout.childrenRect.width) / 2
+            y: (parent.height - layout.childrenRect.height) / 2
             direction: root.isHorizontal ? FlexboxLayout.Row : FlexboxLayout.Column
             alignItems: FlexboxLayout.AlignCenter
-            gap: Math.floor(Appearance.spacing.small / 2)
+            gap: root.wsSpacing
 
-            layer.enabled: true
-            layer.smooth: true
+
 
             Repeater {
                 id: workspaces
@@ -93,7 +100,7 @@ StyledClippingRect {
         }
 
         Loader {
-            active: Config.bar.workspaces.activeIndicator
+            active: Config.bar.workspaces.active.show !== ""
 
             sourceComponent: ActiveIndicator {
                 isHorizontal: root.isHorizontal
@@ -108,9 +115,7 @@ StyledClippingRect {
             anchors.fill: layout
 
             onClicked: event => {
-                const child = root.isHorizontal
-                    ? layout.childAt(event.x, event.y)
-                    : layout.childAt(event.x, event.y);
+                const child = layout.childAt(event.x, event.y);
                 if (!child || child.ws === undefined)
                     return;
                 if (Hypr.activeWsId !== child.ws)

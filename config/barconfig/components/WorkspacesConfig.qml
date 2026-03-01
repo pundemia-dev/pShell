@@ -2,15 +2,16 @@ import Quickshell.Io
 
 JsonObject {
     property int shown: 10
-    property bool activeIndicator: true
-    property bool occupiedBg: false
     property bool showWindows: false
     property bool showWindowsOnSpecialWorkspaces: showWindows
-    property bool activeTrail: false
     property bool perMonitorWorkspaces: true
-    property string label: "  " // if empty, will show workspace name's first letter
-    property string occupiedLabel: "\uf511"//"󰮯 "
-    property string activeLabel: "󰮯 "
-    property string capitalisation: "preserve" // upper, lower, or preserve - relevant only if label is empty
-    property list<var> specialWorkspaceIcons: []
+    property int rounding: -1 // -1 = auto (Appearance.rounding.full)
+    property int spacing: -1 // -1 = auto (Appearance.spacing.small / 2)
+    property list<var> numerals: [] // unique label per workspace index, e.g. ["一", "二", "三"]
+    property string capitalisation: "preserve" // "upper", "lower", "preserve" — only when label is empty
+    property list<var> specialWorkspaceIcons: [] // [{ "name": "music", "icon": "󰎆" }]
+
+    property ActiveWsConfig active: ActiveWsConfig {}
+    property OccupiedWsConfig occupied: OccupiedWsConfig {}
+    property UnitWsConfig unit: UnitWsConfig {}
 }

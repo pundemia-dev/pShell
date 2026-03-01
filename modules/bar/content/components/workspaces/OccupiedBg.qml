@@ -15,10 +15,31 @@ Item {
     required property var occupied
     required property int groupOffset
 
+    readonly property var cfg: Config.bar.workspaces.occupied
+    readonly property bool isMerge: cfg.show === "merge"
+    readonly property real resolvedRounding: cfg.rounding >= 0 ? cfg.rounding : Appearance.rounding.full
+    readonly property color resolvedBg: cfg.bg || Colours.layer(Colours.palette.surface_container_high, 2)
+
     property list<var> pills: []
 
     onOccupiedChanged: {
         if (!occupied) return;
+
+        if (isMerge) {
+            updateMergePills();
+        } else {
+            updateSeparatePills();
+        }
+    }
+
+    onIsMergeChanged: {
+        // Clear and rebuild when mode changes
+        pills.splice(0, pills.length).forEach(p => p.destroy());
+        if (occupied)
+            isMerge ? updateMergePills() : updateSeparatePills();
+    }
+
+    function updateMergePills(): void {
         let count = 0;
         const start = groupOffset;
         const end = start + Config.bar.workspaces.shown;
@@ -37,6 +58,28 @@ Item {
                 }
                 if ((isLastInGroup || !occupied[ws + 1]) && pills[count - 1])
                     pills[count - 1].end = ws;
+            }
+        }
+        if (pills.length > count)
+            pills.splice(count, pills.length - count).forEach(p => p.destroy());
+    }
+
+    function updateSeparatePills(): void {
+        let count = 0;
+        const start = groupOffset;
+        const end = start + Config.bar.workspaces.shown;
+        for (const [ws, occ] of Object.entries(occupied)) {
+            if (ws > start && ws <= end && occ) {
+                if (pills[count]) {
+                    pills[count].start = ws;
+                    pills[count].end = ws;
+                } else {
+                    pills.push(pillComp.createObject(root, {
+                        start: ws,
+                        end: ws
+                    }));
+                }
+                count++;
             }
         }
         if (pills.length > count)
@@ -83,8 +126,8 @@ Item {
             anchors.verticalCenter: root.isHorizontal ? root.verticalCenter : undefined
             anchors.horizontalCenter: root.isHorizontal ? undefined : root.horizontalCenter
 
-            color: Colours.layer(Colours.palette.surface_container_high, 2)
-            radius: Appearance.rounding.full
+            color: root.resolvedBg
+            radius: root.resolvedRounding
 
             scale: 0
             Component.onCompleted: scale = 1
