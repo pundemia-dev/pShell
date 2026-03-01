@@ -353,27 +353,6 @@ LauncherModule {
                         }
                     }
                 }
-
-                // ── Подсказка по шорткату Alt+Enter ──────────────────────────
-                Item {
-                    id: shortcutHint
-
-                    Layout.alignment: Qt.AlignHCenter
-                    implicitWidth: hintRow.implicitWidth
-                    implicitHeight: hintRow.implicitHeight
-
-                    // Tooltip на подсказку шортката
-                    Loader {
-                        active: true
-                        z: 10000
-                        width: 0
-                        height: 0
-                        sourceComponent: Tooltip {
-                            target: shortcutHint
-                            text: "Copy link URL"
-                        }
-                    }
-                }
             }
         }
     }

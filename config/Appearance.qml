@@ -36,8 +36,8 @@ Singleton {
     }
 
     component FontFamily: QtObject {
-        readonly property string sans: "Dank Mono"//"ZedMono Nerd Font"//"IBM Plex Sans"
-        readonly property string mono: "Dank Mono"//"ZedMono Nerd Font"//"JetBrains Mono NF"
+        readonly property string sans: "Sofia Sans Medium"//"Zen Kurenaido"//"Ioskeley Mono"//"Dank Mono"//"ZedMono Nerd Font"//"IBM Plex Sans"
+        readonly property string mono: "Sofia Sans Medium"//"Zen Kurenaido"//"Ioskeley Mono"//"Dank Mono"//"ZedMono Nerd Font"//"JetBrains Mono NF"
         readonly property string tabler: "tabler-icons"//"Material Symbols Rounded"
     }
 

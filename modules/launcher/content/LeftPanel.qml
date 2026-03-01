@@ -5,6 +5,7 @@ import qs.components
 import qs.components.controls
 import qs.components.containers
 import qs.config
+import qs.services
 
 StyledRect {
     id: root
@@ -30,13 +31,49 @@ StyledRect {
         barThickness: 6
         barSpacing: 8
 
-        contentItem: StyledListView {
-            id: innerListView
+        contentItem: Item {
             anchors.fill: parent
-            clip: true
-            spacing: 4
 
-            implicitHeight: (Config.launcher.itemHeight + spacing) * Math.min(Config.launcher.maxShown, count) - spacing
+            Row {
+                anchors.centerIn: parent
+                visible: innerListView.count === 0
+                opacity: 0.45
+                spacing: Appearance.spacing.normal
+
+                StyledRect {
+                    implicitWidth: implicitHeight
+                    implicitHeight: hintIcon.implicitHeight + Appearance.padding.smaller * 2
+                    radius: Appearance.rounding.full
+                    color: Colours.palette.surface_variant
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    StyledIcon {
+                        id: hintIcon
+                        anchors.centerIn: parent
+                        text: "\uee6d"
+                        font.pointSize: Appearance.font.size.large
+                        color: Colours.palette.on_surface_variant
+                    }
+                }
+
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("try to type something")
+                    font.pointSize: Appearance.font.size.normal
+                    color: Colours.palette.on_surface_variant
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
+            StyledListView {
+                id: innerListView
+                anchors.fill: parent
+                clip: true
+                spacing: 4
+
+                implicitHeight: (Config.launcher.itemHeight + spacing) * Math.min(Config.launcher.maxShown, count) - spacing
+
+                onCountChanged: if (count > 0) currentIndex = 0
 
             add: Transition {
                 Anim { properties: "opacity,scale"; from: 0; to: 1 }
@@ -55,6 +92,7 @@ StyledRect {
             displaced: Transition {
                 Anim { property: "y" }
                 Anim { properties: "opacity,scale"; to: 1 }
+            }
             }
         }
     }

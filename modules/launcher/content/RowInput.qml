@@ -9,6 +9,8 @@ import qs.services
 Item {
     id: root
 
+    signal closeRequested()
+
     required property var moduleManager
 
     signal moveUp()
@@ -204,7 +206,7 @@ Item {
                     switch (event.key) {
                     case Qt.Key_Backspace:
                         if (text.length === 0) {
-                            let sym = root.moduleManager.handleBackspaceOnEmpty()
+                            let sym = root.moduleManager.handleBackspaceOnEmpty(event.isAutoRepeat)
                             if (sym !== null) {
                                 text = sym
                                 Qt.callLater(() => { cursorPosition = text.length })
@@ -226,7 +228,7 @@ Item {
                         event.accepted = true
                         break
                     case Qt.Key_Escape:
-                        root.moduleManager.processInput("")
+                        root.closeRequested()
                         event.accepted = true
                         break
                     }

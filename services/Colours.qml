@@ -65,7 +65,7 @@ Singleton {
     }
 
     FileView {
-        path: `${Paths.stringify(Paths.state)}/scheme.json`
+        path: `/home/pundemia/.local/state/pShell/scheme.json`
         watchChanges: true
         onFileChanged: reload()
         onLoaded: root.load(text(), false)

@@ -38,7 +38,7 @@ Item {
     property int  hideDelay: 1200
 
     property bool _thumbHovered: false
-    property bool _trackHovered: false
+    property bool _trackHovered: edgeHoverZones.anyHovered
     property bool _dragging:     false
     property bool _scrolling:    false
     property bool _animating:    false
@@ -222,6 +222,52 @@ Item {
         Behavior on anchors.bottomMargin { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
     }
 
+    // ── Edge hover zones ──────────────────────────────────────────────────────
+    // Thin strips along each edge to detect hover near the scrollbar
+    // WITHOUT covering the content area (so delegates get hover/click events).
+
+    Item {
+        id: edgeHoverZones
+        anchors.fill: parent
+        z: 15
+
+        readonly property real edgeWidth: root.barThickness + root.barSpacing * 2
+        readonly property bool anyHovered: rHover.hovered || lHover.hovered || tHover.hovered || bHover.hovered
+
+        // Right edge
+        Item {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: edgeHoverZones.edgeWidth
+            HoverHandler { id: rHover }
+        }
+        // Left edge
+        Item {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: edgeHoverZones.edgeWidth
+            HoverHandler { id: lHover }
+        }
+        // Top edge
+        Item {
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: edgeHoverZones.edgeWidth
+            HoverHandler { id: tHover }
+        }
+        // Bottom edge
+        Item {
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: edgeHoverZones.edgeWidth
+            HoverHandler { id: bHover }
+        }
+    }
+
     // ── PathSegment ───────────────────────────────────────────────────────────
 
     component PathSegment : Item {
@@ -299,13 +345,6 @@ Item {
         segRadius:    root.trackRadius
         opacity:      root._barVisible ? 1.0 : 0.0
         Behavior on opacity { NumberAnimation { duration: 400 } }
-
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            onEntered: root._trackHovered = true
-            onExited:  root._trackHovered = false
-        }
     }
 
     // ── Thumb ──────────────────────────────────────────────────────────────────
@@ -352,7 +391,7 @@ Item {
         readonly property real startP: tA + travelLen * progress
         readonly property real endP:   tA + thumbLen  + travelLen * progress
 
-        property real expandedThickness: root.barThickness * (thumbDrag.active ? 3.2 : (thumbMouse.containsMouse ? 2.0 : 1.0))
+        property real expandedThickness: root.barThickness * (thumbDrag.active ? 3.2 : (edgeHoverZones.anyHovered ? 2.0 : 1.0))
         Behavior on expandedThickness { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
         readonly property real thumbEdgeOffset: (root.barThickness - expandedThickness) / 2
@@ -396,18 +435,10 @@ Item {
             }
         }
 
-        MouseArea {
-            id: thumbMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            acceptedButtons: Qt.NoButton
-            onEntered: root._thumbHovered = true
-            onExited:  root._thumbHovered = thumbDrag.active
-        }
-
         DragHandler {
             id: thumbDrag
             target: null
+            enabled: root._trackHovered || root._dragging
 
             property real _startRawProgress: 0
             property real _startY: 0

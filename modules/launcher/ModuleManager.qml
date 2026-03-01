@@ -219,8 +219,10 @@ Item {
         onTriggered: root.isEscapePending = false
     }
 
-    function handleBackspaceOnEmpty() {
+    function handleBackspaceOnEmpty(isAutoRepeat) {
         if (currentState === stateActive) {
+            // Авто-повтор зажатого Backspace не считается за нажатие — игнорируем
+            if (isAutoRepeat) return null
             if (isEscapePending) {
                 bsTimer.stop()
                 isEscapePending = false

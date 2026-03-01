@@ -31,7 +31,8 @@ Item {
         //     }
         // }f
             if (launcherVisible) {
-                moduleManager.activeModule?.onActivated("")
+                moduleManager._setActiveModule(moduleManager.defaultModule, "")
+                moduleManager.currentState = moduleManager.stateDefault
                 FocusManager.requestFocus("launcher");
             } else {
                 FocusManager.releaseFocus("launcher");
@@ -204,6 +205,8 @@ Item {
                         //     }
                         // }
 
+                        onCloseRequested: VisibilitiesManager.setVisibility(root.screen, "launcher", false)
+
                         Connections {
                             target: root
                             function onLauncherVisibleChanged() {
@@ -234,7 +237,6 @@ Item {
                                    : moduleManager.activeModule?.listModel
 
                             delegate: UniversalDelegate {
-                                width: leftPanel.width
                                 list: leftPanel
                             }
 

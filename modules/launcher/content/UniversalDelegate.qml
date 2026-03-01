@@ -11,13 +11,13 @@ StyledClippingRect {
 
     required property var modelData
     required property var list
+    required property int index
 
     readonly property bool isCurrent: ListView.isCurrentItem
     readonly property bool hasBackground: root.modelData?.backgroundImage ? true : false
 
     implicitHeight: hasBackground ? Config.launcher.itemHeight * 2 : Config.launcher.itemHeight
-    anchors.left: parent?.left
-    anchors.right: parent?.right
+    width: parent?.width ?? 0
 
     radius: Appearance.rounding.normal
     color: hasBackground ? Colours.palette.surface : "transparent"
@@ -47,7 +47,7 @@ StyledClippingRect {
         anchors.fill: parent
         radius: root.radius
         color: Colours.alpha(Colours.palette.surface_variant, 0.5)
-        opacity: !root.hasBackground && hoverArea.containsMouse ? 1.0 : 0.0
+        opacity: !root.hasBackground && stateLayer.containsMouse ? 1.0 : 0.0
 
         Behavior on opacity { Anim {} }
     }
@@ -63,24 +63,22 @@ StyledClippingRect {
         Behavior on opacity { Anim {} }
     }
 
-    // --- HOVER AREA ---
-
-    MouseArea {
-        id: hoverArea
-
-        anchors.fill: parent
-
-        hoverEnabled: true
-        acceptedButtons: Qt.NoButton
-    }
-
     // --- STATE LAYER ---
 
     StateLayer {
+        id: stateLayer
+
         radius: root.radius
         z: 10
 
-        onClicked: root.trigger()
+        function onClicked(): void {
+            root.trigger()
+        }
+
+        onEntered: {
+            let lv = root.list?.listView
+            if (lv) lv.currentIndex = root.index
+        }
     }
 
     // --- ФОНОВОЕ ИЗОБРАЖЕНИЕ ---
@@ -226,7 +224,7 @@ StyledClippingRect {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
 
-                opacity: (root.isCurrent || hoverArea.containsMouse) ? 1.0 : 0.0
+                opacity: (root.isCurrent || stateLayer.containsMouse) ? 1.0 : 0.0
 
                 Behavior on opacity { Anim {} }
             }
@@ -243,7 +241,7 @@ StyledClippingRect {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
 
-                opacity: (root.isCurrent || hoverArea.containsMouse) ? 1.0 : 0.0
+                opacity: (root.isCurrent || stateLayer.containsMouse) ? 1.0 : 0.0
 
                 Behavior on opacity { Anim {} }
             }
