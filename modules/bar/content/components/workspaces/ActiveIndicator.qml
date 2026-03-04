@@ -68,8 +68,8 @@ StyledRect {
     clip: true
 
     // Position on primary axis
-    x: isHorizontal ? offset + mask.x : mask.x + (mask.implicitWidth - crossSize) / 2
-    y: isHorizontal ? mask.y + (mask.implicitHeight - crossSize) / 2 : offset + mask.y
+    x: isHorizontal ? offset + mask.x : Math.round(mask.x + (mask.implicitWidth - crossSize) / 2)
+    y: isHorizontal ? Math.round(mask.y + (mask.implicitHeight - crossSize) / 2) : offset + mask.y
 
     // Size: primary axis = animated size, cross axis from config or unitSize
     implicitWidth: isHorizontal ? mainSize : crossSize
@@ -83,8 +83,8 @@ StyledRect {
         sourceColor: Colours.palette.on_surface
         colorizationColor: root.cfg.labelColor || Colours.palette.on_primary
 
-        x: root.isHorizontal ? -root.offset : (root.mask.implicitWidth - root.crossSize) / -2
-        y: root.isHorizontal ? (root.mask.implicitHeight - root.crossSize) / -2 : -root.offset
+        x: root.isHorizontal ? -root.offset : Math.round((root.mask.implicitWidth - root.crossSize) / -2)
+        y: root.isHorizontal ? Math.round((root.mask.implicitHeight - root.crossSize) / -2) : -root.offset
         implicitWidth: root.mask.implicitWidth
         implicitHeight: root.mask.implicitHeight
 

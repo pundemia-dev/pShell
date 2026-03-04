@@ -40,8 +40,6 @@ FlexboxLayout {
         font.family: Appearance.font.family.mono
         color: root.colour
 
-        // Layout.alignment: Qt.AlignVCenter
-        transform: Translate { y: -2 }
-        // anchors.verticalCenterOffset: -2
+        // transform: Translate { y: 0 }
     }
 }

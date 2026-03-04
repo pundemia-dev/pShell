@@ -82,8 +82,8 @@ Item {
     StyledText {
         id: indicator
 
-        x: isHorizontal ? 0 : (root.implicitWidth - width) / 2
-        y: isHorizontal ? (root.implicitHeight - height) / 2 : 0
+        x: isHorizontal ? 0 : Math.round((root.implicitWidth - width) / 2)
+        y: isHorizontal ? Math.round((root.implicitHeight - height) / 2) : 0
         width: root.resolvedWidth
         height: root.resolvedHeight
 

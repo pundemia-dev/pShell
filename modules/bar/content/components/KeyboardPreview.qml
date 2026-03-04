@@ -35,7 +35,7 @@ FlexboxLayout {
         font.family: Appearance.font.family.mono
         color: root.colour
         animate: true
-        transform: Translate { y: Hypr.capsLock ? -1 : -3 }
+        transform: Translate { y: Hypr.capsLock ? 1 : 0 }
         // anchors.verticalCenterOffset: -2
     }
 }

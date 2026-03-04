@@ -12,7 +12,7 @@ JsonObject {
     // property int thickness: 50
     property SeparatedData thickness: SeparatedData {
         all: 44
-        // center: 100
+        center: 52
     }
     property bool separated: true
     property SeparatedData paddings: SeparatedData {
@@ -22,7 +22,7 @@ JsonObject {
     }
     property SeparatedData rounding: SeparatedData {
         all: 12
-        center: 30
+        center: 70
         // begin: 15
     }
     property SeparatedData invertBaseRounding: SeparatedData {
@@ -63,10 +63,10 @@ JsonObject {
         { "type": "widget", "name": "Clock" },
         { "type": "widget", "name": "Dinamic" },
         { "type": "group", "children": [
-            { "type": "widget", "name": "Network" },
-            { "type": "widget", "name": "Power" },
+            { "type": "widget", "name": "NetworkStatus" },
+            { "type": "widget", "name": "PowerStatus" },
             { "type": "widget", "name": "Dinamic" },
-            { "type": "widget", "name": "Bluetooth" }
+            { "type": "widget", "name": "BluetoothStatus" }
         ]},
         { "type": "widget", "name": "OsIcon" },
         { "type": "widget", "name": "OsIcon" },
@@ -81,11 +81,11 @@ JsonObject {
         ]},
         { "type": "widget", "name": "Clock" },
         { "type": "group", "children": [
-            { "type": "widget", "name": "Bluetooth" },
-            { "type": "widget", "name": "Network" },
-            { "type": "widget", "name": "Power" },
+            { "type": "widget", "name": "BluetoothStatus" },
+            { "type": "widget", "name": "NetworkStatus" },
+            { "type": "widget", "name": "PowerStatus" },
         ]},
-        { "type": "widget", "name": "OsIcon" },
+        { "type": "widget", "name": "Power" },
     ]
     property bool isEditing: false
     property KbPreviewConfig kbPreview: KbPreviewConfig {}

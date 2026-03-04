@@ -430,10 +430,10 @@ Item {
 
         drag.target: view.contentItem
         drag.axis: root.isHorizontal ? Drag.XAxis : Drag.YAxis
-        drag.maximumX: root.isHorizontal ? 0 : undefined
-        drag.minimumX: root.isHorizontal ? Math.min(0, view.width - view.contentWidth - Appearance.padding.small) : undefined
-        drag.maximumY: root.isHorizontal ? undefined : 0
-        drag.minimumY: root.isHorizontal ? undefined : Math.min(0, view.height - view.contentHeight - Appearance.padding.small)
+        drag.maximumX: 0
+        drag.minimumX: root.isHorizontal ? Math.min(0, view.width - view.contentWidth - Appearance.padding.small) : 0
+        drag.maximumY: 0
+        drag.minimumY: root.isHorizontal ? 0 : Math.min(0, view.height - view.contentHeight - Appearance.padding.small)
 
         onPressed: event => {
             startX = event.x;

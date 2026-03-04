@@ -25,7 +25,7 @@ Item {
         radius: Appearance.rounding.full
 
         function onClicked(): void {
-            // root.visibilities.session = !root.visibilities.session;
+            VisibilitiesManager.getForActive().toggleVisibility("launcher");
         }
     }
 

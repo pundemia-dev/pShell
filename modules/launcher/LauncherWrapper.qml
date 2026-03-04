@@ -298,7 +298,7 @@ Item {
             // anchors.fill: parent
 
             Component.onCompleted: {
-                root.manager.requestBackground(root.content, false, false);
+                root.manager.requestBackground(root.content, false, true);
             }
 
             Component.onDestruction: {

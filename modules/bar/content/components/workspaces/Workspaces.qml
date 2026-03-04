@@ -26,7 +26,7 @@ StyledClippingRect {
     readonly property real unitSize: Config.bar.group.thickness - Appearance.padding.small * 2
     readonly property real wsSpacing: Config.bar.workspaces.spacing >= 0
         ? Config.bar.workspaces.spacing
-        : Math.floor(Appearance.spacing.small / 2)
+        : Math.round(Appearance.spacing.small / 2)
 
     // Deterministic main-axis size: doesn't depend on layout engine timing
     readonly property real totalMainSize: Config.bar.workspaces.shown * unitSize
@@ -35,11 +35,11 @@ StyledClippingRect {
     property real blur: onSpecial ? 1 : 0
 
     implicitWidth: isHorizontal
-        ? Math.max(layout.childrenRect.width, totalMainSize) + Appearance.padding.small * 2
-        : unitSize + Appearance.padding.small * 2
+        ? Math.ceil((Math.max(layout.childrenRect.width, totalMainSize) + Appearance.padding.small * 2) / 2) * 2
+        : Math.ceil((unitSize + Appearance.padding.small * 2) / 2) * 2
     implicitHeight: isHorizontal
-        ? unitSize + Appearance.padding.small * 2
-        : Math.max(layout.childrenRect.height, totalMainSize) + Appearance.padding.small * 2
+        ? Math.ceil((unitSize + Appearance.padding.small * 2) / 2) * 2
+        : Math.ceil((Math.max(layout.childrenRect.height, totalMainSize) + Appearance.padding.small * 2) / 2) * 2
 
     color: Colours.palette.surface_container
     radius: Config.bar.workspaces.rounding >= 0 ? Config.bar.workspaces.rounding : Appearance.rounding.full
@@ -76,8 +76,8 @@ StyledClippingRect {
         FlexboxLayout {
             id: layout
 
-            x: (parent.width - layout.childrenRect.width) / 2
-            y: (parent.height - layout.childrenRect.height) / 2
+            x: Appearance.padding.small
+            y: Appearance.padding.small
             direction: root.isHorizontal ? FlexboxLayout.Row : FlexboxLayout.Column
             alignItems: FlexboxLayout.AlignCenter
             gap: root.wsSpacing

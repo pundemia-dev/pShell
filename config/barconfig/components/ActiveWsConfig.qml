@@ -10,5 +10,5 @@ JsonObject {
     property string labelColor: "" // empty = Colours.palette.on_primary
     property string labelFont: "" // empty = Appearance.font.family.tabler
     property int fontSize: -1 // -1 = auto (Appearance.font.size.smaller)
-    property string label: "󰮯 "
+    property string label: "\ueebc"
 }
