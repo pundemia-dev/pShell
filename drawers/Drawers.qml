@@ -8,12 +8,13 @@ import QtQuick.Effects
 
 import "exclusions"
 import "backgrounds"
-import "border"
 import "wallpaper"
+import "border"
 import "corners"
 import "panels"
 import qs.modules.bar
 import qs.modules.launcher
+import qs.modules.notifications
 
 import qs.config
 import qs.components
@@ -63,6 +64,32 @@ Variants {
             bottom_area: scope.bottom_area
         }
 
+        // ── Wallpaper background layer ──────────────────────────────
+        StyledWindow {
+            id: bgWin
+
+            screen: scope.modelData
+            name: "background"
+
+            WlrLayershell.exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Background
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+
+            color: "black"
+
+            anchors.top: true
+            anchors.bottom: true
+            anchors.left: true
+            anchors.right: true
+
+            mask: Region {}
+
+            Wallpaper {
+                monitorName: scope.modelData.name
+            }
+        }
+
+        // ── Main drawers layer ──────────────────────────────────────
         StyledWindow {
             id: win
 
@@ -158,6 +185,11 @@ Variants {
                     // screenWidth: scope.modelData.width
                     // screenHeight: scope.modelData.height
                     screen: scope.modelData //.screen
+                }
+                NotificationsWrapper {
+                    id: notifications
+                    manager: scope.backgroundsManager
+                    screen: scope.modelData
                 }
 
             }

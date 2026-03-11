@@ -19,7 +19,7 @@ StyledRect {
     Layout.fillWidth: true
     implicitHeight: row.implicitHeight + Appearance.padding.large * 2
     radius: Appearance.rounding.normal
-    color: Colours.layer(Colours.palette.m3surfaceContainer, 2)
+    color: Colours.layer(Colours.palette.surface_container, 2)
 
     Behavior on implicitHeight {
         Anim {}
@@ -50,4 +50,3 @@ StyledRect {
         }
     }
 }
-

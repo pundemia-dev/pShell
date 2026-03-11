@@ -28,10 +28,10 @@ Row {
     property alias label: label
     property alias stateLayer: stateLayer
 
-    property color colour: type == SplitButton.Filled ? Colours.palette.m3primary : Colours.palette.m3secondaryContainer
-    property color textColour: type == SplitButton.Filled ? Colours.palette.m3onPrimary : Colours.palette.m3onSecondaryContainer
-    property color disabledColour: Qt.alpha(Colours.palette.m3onSurface, 0.1)
-    property color disabledTextColour: Qt.alpha(Colours.palette.m3onSurface, 0.38)
+    property color colour: type == SplitButton.Filled ? Colours.palette.primary : Colours.palette.secondary_container
+    property color textColour: type == SplitButton.Filled ? Colours.palette.on_primary : Colours.palette.on_secondary_container
+    property color disabledColour: Qt.alpha(Colours.palette.on_surface, 0.1)
+    property color disabledTextColour: Qt.alpha(Colours.palette.on_surface, 0.38)
 
     spacing: Math.floor(Appearance.spacing.small / 2)
 
@@ -64,7 +64,7 @@ Row {
             anchors.horizontalCenterOffset: Math.floor(root.verticalPadding / 4)
             spacing: Appearance.spacing.small
 
-            MaterialIcon {
+            StyledIcon {
                 id: iconLabel
 
                 Layout.alignment: Qt.AlignVCenter
@@ -119,7 +119,7 @@ Row {
             }
         }
 
-        MaterialIcon {
+        StyledIcon {
             id: expandIcon
 
             anchors.centerIn: parent

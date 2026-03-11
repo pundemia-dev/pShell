@@ -13,7 +13,7 @@ ColumnLayout {
     spacing: Appearance.spacing.normal
     Layout.alignment: Qt.AlignHCenter
 
-    MaterialIcon {
+    StyledIcon {
         Layout.alignment: Qt.AlignHCenter
         animate: true
         text: root.icon
@@ -29,4 +29,3 @@ ColumnLayout {
         font.bold: true
     }
 }
-

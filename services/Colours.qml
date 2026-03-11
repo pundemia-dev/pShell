@@ -48,7 +48,7 @@ Singleton {
             root.scheme = scheme.name;
             flavour = scheme.flavour;
         }
-        console.warn(data);
+        // console.warn(data);
 
         light = scheme.mode === "light";
 

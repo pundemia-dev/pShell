@@ -44,10 +44,10 @@ ColumnLayout {
                 Layout.fillWidth: true
             }
 
-            MaterialIcon {
+            StyledIcon {
                 text: "expand_more"
                 rotation: root.expanded ? 180 : 0
-                color: Colours.palette.m3onSurfaceVariant
+                color: Colours.palette.on_surface_variant
                 font.pointSize: Appearance.font.size.normal
                 Behavior on rotation {
                     Anim {
@@ -60,7 +60,7 @@ ColumnLayout {
 
         StateLayer {
             anchors.fill: parent
-            color: Colours.palette.m3onSurface
+            color: Colours.palette.on_surface
             radius: Appearance.rounding.normal
             showHoverBackground: false
             function onClicked(): void {
@@ -88,9 +88,9 @@ ColumnLayout {
             id: backgroundRect
             anchors.fill: parent
             radius: Appearance.rounding.normal
-            color: Colours.transparency.enabled 
-                   ? Colours.layer(Colours.palette.m3surfaceContainer, root.nested ? 3 : 2)
-                   : (root.nested ? Colours.palette.m3surfaceContainerHigh : Colours.palette.m3surfaceContainer)
+            color: Colours.transparency.enabled
+                   ? Colours.layer(Colours.palette.surface_container, root.nested ? 3 : 2)
+                   : (root.nested ? Colours.palette.surface_container_high : Colours.palette.surface_container)
             opacity: root.showBackground && root.expanded ? 1.0 : 0.0
             visible: root.showBackground
 
@@ -125,11 +125,10 @@ ColumnLayout {
                 Layout.bottomMargin: root.description !== "" ? Appearance.spacing.small : 0
                 visible: root.description !== ""
                 text: root.description
-                color: Colours.palette.m3onSurfaceVariant
+                color: Colours.palette.on_surface_variant
                 font.pointSize: Appearance.font.size.small
                 wrapMode: Text.Wrap
             }
         }
     }
 }
-

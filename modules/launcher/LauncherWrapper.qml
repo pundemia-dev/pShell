@@ -8,6 +8,8 @@ import QtQuick
 import qs.components
 import QtQuick.Layouts
 import qs.components.controls
+import qs.components.containers
+import qs.components.effects
 import qs.components.images
 import "content"
 
@@ -172,8 +174,28 @@ Item {
                         moduleManager: moduleManager
                         implicitWidth: flexLayout.contentWidth
 
-                        onMoveUp:   leftPanel.listView.decrementCurrentIndex()
-                        onMoveDown: leftPanel.listView.incrementCurrentIndex()
+                        onMoveUp:   moduleManager.activeModule
+                                        ? moduleManager.activeModule.navigateUp()
+                                        : leftPanel.listView.decrementCurrentIndex()
+                        onMoveDown: moduleManager.activeModule
+                                        ? moduleManager.activeModule.navigateDown()
+                                        : leftPanel.listView.incrementCurrentIndex()
+                        onMoveLeft: {
+                            if (moduleManager.activeModule && typeof moduleManager.activeModule.navigateUp === "function")
+                                moduleManager.activeModule.navigateUp()
+                        }
+                        onMoveRight: {
+                            if (moduleManager.activeModule && typeof moduleManager.activeModule.navigateDown === "function")
+                                moduleManager.activeModule.navigateDown()
+                        }
+                        onModifierPressed: (key) => {
+                            if (moduleManager.activeModule && typeof moduleManager.activeModule.onModifierPressed === "function")
+                                moduleManager.activeModule.onModifierPressed(key)
+                        }
+                        onModifierReleased: (key) => {
+                            if (moduleManager.activeModule && typeof moduleManager.activeModule.onModifierReleased === "function")
+                                moduleManager.activeModule.onModifierReleased(key)
+                        }
                         onExecute: (query, isAlt) => {
                             // В режиме выбора модуля — Enter активирует модуль из списка
                             if (moduleManager.currentState === moduleManager.stateSelecting) {
@@ -212,6 +234,12 @@ Item {
                             function onLauncherVisibleChanged() {
                                 if (root.launcherVisible) rowInput.clear()
                             }
+                        }
+
+                        Connections {
+                            target: moduleManager.activeModule ?? null
+                            function onDefaultNavigateUp()   { leftPanel.listView.decrementCurrentIndex() }
+                            function onDefaultNavigateDown() { leftPanel.listView.incrementCurrentIndex() }
                         }
                     }
                     RowLayout {

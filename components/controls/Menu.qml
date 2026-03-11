@@ -26,7 +26,7 @@ Elevation {
     StyledClippingRect {
         anchors.fill: parent
         radius: parent.radius
-        color: Colours.palette.m3surfaceContainer
+        color: Colours.palette.surface_container
 
         ColumnLayout {
             id: column
@@ -49,10 +49,10 @@ Elevation {
                     implicitWidth: menuOptionRow.implicitWidth + Appearance.padding.normal * 2
                     implicitHeight: menuOptionRow.implicitHeight + Appearance.padding.normal * 2
 
-                    color: Qt.alpha(Colours.palette.m3secondaryContainer, active ? 1 : 0)
+                    color: Qt.alpha(Colours.palette.secondary_container, active ? 1 : 0)
 
                     StateLayer {
-                        color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
+                        color: item.active ? Colours.palette.on_secondary_container : Colours.palette.on_surface
                         disabled: !root.expanded
 
                         function onClicked(): void {
@@ -69,17 +69,17 @@ Elevation {
                         anchors.margins: Appearance.padding.normal
                         spacing: Appearance.spacing.small
 
-                        MaterialIcon {
+                        StyledIcon {
                             Layout.alignment: Qt.AlignVCenter
                             text: item.modelData.icon
-                            color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurfaceVariant
+                            color: item.active ? Colours.palette.on_secondary_container : Colours.palette.on_surface_variant
                         }
 
                         StyledText {
                             Layout.alignment: Qt.AlignVCenter
                             Layout.fillWidth: true
                             text: item.modelData.text
-                            color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
+                            color: item.active ? Colours.palette.on_secondary_container : Colours.palette.on_surface
                         }
 
                         Loader {
@@ -87,9 +87,9 @@ Elevation {
                             active: item.modelData.trailingIcon.length > 0
                             visible: active
 
-                            sourceComponent: MaterialIcon {
+                            sourceComponent: StyledIcon {
                                 text: item.modelData.trailingIcon
-                                color: item.active ? Colours.palette.m3onSecondaryContainer : Colours.palette.m3onSurface
+                                color: item.active ? Colours.palette.on_secondary_container : Colours.palette.on_surface
                             }
                         }
                     }

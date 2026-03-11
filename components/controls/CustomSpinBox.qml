@@ -80,13 +80,13 @@ RowLayout {
         background: StyledRect {
             implicitWidth: 100
             radius: Appearance.rounding.small
-            color: Colours.tPalette.m3surfaceContainerHigh
+            color: Colours.palette.surface_container_high
         }
     }
 
     StyledRect {
         radius: Appearance.rounding.small
-        color: Colours.palette.m3primary
+        color: Colours.palette.primary
 
         implicitWidth: implicitHeight
         implicitHeight: upIcon.implicitHeight + Appearance.padding.small * 2
@@ -94,7 +94,7 @@ RowLayout {
         StateLayer {
             id: upState
 
-            color: Colours.palette.m3onPrimary
+            color: Colours.palette.on_primary
 
             onPressAndHold: timer.start()
             onReleased: timer.stop()
@@ -110,18 +110,18 @@ RowLayout {
             }
         }
 
-        MaterialIcon {
+        StyledIcon {
             id: upIcon
 
             anchors.centerIn: parent
             text: "keyboard_arrow_up"
-            color: Colours.palette.m3onPrimary
+            color: Colours.palette.on_primary
         }
     }
 
     StyledRect {
         radius: Appearance.rounding.small
-        color: Colours.palette.m3primary
+        color: Colours.palette.primary
 
         implicitWidth: implicitHeight
         implicitHeight: downIcon.implicitHeight + Appearance.padding.small * 2
@@ -129,7 +129,7 @@ RowLayout {
         StateLayer {
             id: downState
 
-            color: Colours.palette.m3onPrimary
+            color: Colours.palette.on_primary
 
             onPressAndHold: timer.start()
             onReleased: timer.stop()
@@ -145,12 +145,12 @@ RowLayout {
             }
         }
 
-        MaterialIcon {
+        StyledIcon {
             id: downIcon
 
             anchors.centerIn: parent
             text: "keyboard_arrow_down"
-            color: Colours.palette.m3onPrimary
+            color: Colours.palette.on_primary
         }
     }
 

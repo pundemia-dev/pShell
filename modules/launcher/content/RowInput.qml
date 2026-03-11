@@ -15,7 +15,11 @@ Item {
 
     signal moveUp()
     signal moveDown()
+    signal moveLeft()
+    signal moveRight()
     signal execute(string query, bool isAlt)
+    signal modifierPressed(int key)
+    signal modifierReleased(int key)
 
     implicitHeight: 50
 
@@ -198,6 +202,13 @@ Item {
                 onTextEdited: root.moduleManager.processInput(text)
 
                 Keys.onPressed: (event) => {
+                    // Forward bare modifier press (no Ctrl held — Ctrl combos are shortcuts)
+                    if ((event.key === Qt.Key_Alt || event.key === Qt.Key_Shift)
+                        && !(event.modifiers & Qt.ControlModifier)) {
+                        root.modifierPressed(event.key)
+                        return
+                    }
+
                     // Отмена красной пилюли при любом вводе
                     if (event.key !== Qt.Key_Backspace || text.length > 0) {
                         root.moduleManager.cancelEscape()
@@ -222,6 +233,18 @@ Item {
                         root.moveDown()
                         event.accepted = true
                         break
+                    case Qt.Key_Left:
+                        if (text.length === 0 || cursorPosition === 0) {
+                            root.moveLeft()
+                            event.accepted = true
+                        }
+                        break
+                    case Qt.Key_Right:
+                        if (text.length === 0 || cursorPosition === text.length) {
+                            root.moveRight()
+                            event.accepted = true
+                        }
+                        break
                     case Qt.Key_Return:
                     case Qt.Key_Enter:
                         root.execute(text, event.modifiers & Qt.AltModifier)
@@ -231,6 +254,12 @@ Item {
                         root.closeRequested()
                         event.accepted = true
                         break
+                    }
+                }
+
+                Keys.onReleased: (event) => {
+                    if (event.key === Qt.Key_Alt || event.key === Qt.Key_Shift) {
+                        root.modifierReleased(event.key)
                     }
                 }
 

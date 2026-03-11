@@ -9,6 +9,7 @@ import "launcherconfig"
 import "borderconfig"
 import "cornersconfig"
 import "backgroundsconfig"
+import "notifsconfig"
 
 Singleton {
     id: root
@@ -18,6 +19,7 @@ Singleton {
     property alias border: adapter.border
     property alias corners: adapter.corners
     property alias backgrounds: adapter.backgrounds
+    property alias notifs: adapter.notifs
 
     FileView {
         id: fileview
@@ -35,6 +37,7 @@ Singleton {
             property BorderConfig border: BorderConfig {}
             property CornersConfig corners: CornersConfig {}
             property BackgroundsConfig backgrounds: BackgroundsConfig {}
+            property NotifsConfig notifs: NotifsConfig {}
         }
     }
 }
